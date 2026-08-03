@@ -2530,6 +2530,11 @@ body[data-page="admin-dashboard"] {
   font-size: 0.82rem;
 }
 
+.admin-create-button {
+  width: 100%;
+  margin: 0 0 12px;
+}
+
 .admin-search-label {
   display: grid;
   gap: 6px;
@@ -2577,6 +2582,44 @@ body[data-page="admin-dashboard"] {
   padding: 20px;
 }
 
+.admin-detail-head,
+.admin-section-heading,
+.admin-inline-actions,
+.admin-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-detail button,
+.admin-create-form button {
+  padding: 8px 12px;
+  color: #fff;
+  background: var(--deep-green);
+  border: 1px solid var(--deep-green);
+  border-radius: 3px;
+}
+
+.admin-detail button.danger,
+.admin-inline-actions button.danger,
+.admin-bottom-actions button.danger {
+  color: #9f2424;
+  background: #fff;
+  border-color: #d9a5a5;
+}
+
+.admin-action-note {
+  min-height: 20px;
+  margin: 0;
+  color: var(--deep-green);
+  font-size: 0.84rem;
+}
+
+.admin-action-note.error {
+  color: #9f2424;
+}
+
 .admin-detail-head p,
 .admin-detail-head span,
 .admin-empty-row {
@@ -2601,19 +2644,42 @@ body[data-page="admin-dashboard"] {
   margin: 0;
 }
 
-.admin-profile-grid div {
+.admin-profile-grid > div,
+.admin-profile-grid > label {
+  display: grid;
+  gap: 5px;
   padding: 10px;
   border: 1px solid var(--border);
   border-radius: 3px;
 }
 
-.admin-profile-grid dt {
+.admin-profile-grid label span,
+.admin-readonly span {
   color: var(--muted);
   font-size: 0.72rem;
 }
 
-.admin-profile-grid dd {
-  margin: 3px 0 0;
+.admin-profile-grid input,
+.admin-upload-card input,
+.admin-upload-card select,
+.admin-create-form input,
+.admin-analysis-editor textarea {
+  width: 100%;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.admin-profile-grid input,
+.admin-upload-card input,
+.admin-upload-card select,
+.admin-create-form input {
+  min-height: 36px;
+  padding: 7px 8px;
+}
+
+.admin-readonly strong {
   overflow-wrap: anywhere;
   font-size: 0.88rem;
   font-weight: 600;
@@ -2648,6 +2714,24 @@ body[data-page="admin-dashboard"] {
   min-width: 0;
 }
 
+.admin-upload-card label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.admin-upload-card .admin-inline-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 5px;
+}
+
+.admin-inline-actions button {
+  padding: 5px 9px;
+  font-size: 0.75rem;
+}
+
 .admin-upload-card span {
   overflow: hidden;
   color: var(--muted);
@@ -2673,6 +2757,42 @@ body[data-page="admin-dashboard"] {
   margin: 16px 0;
   border: 0;
   border-top: 1px solid var(--border);
+}
+
+.admin-analysis-editor {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.admin-analysis-editor textarea {
+  min-height: 120px;
+  padding: 10px;
+  resize: vertical;
+  font: inherit;
+}
+
+.admin-bottom-actions {
+  justify-content: flex-start;
+  padding: 4px 0 20px;
+}
+
+.admin-create-form {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.admin-create-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .admin-saved-result pre {

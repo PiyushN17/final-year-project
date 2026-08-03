@@ -1391,7 +1391,7 @@ cropImageInput?.addEventListener("change", () => {
   label.textContent = `${file.name} · saving`;
   saveImageToCloud(file, kind)
     .then(() => { label.textContent = `${file.name} · saved`; })
-    .catch((error) => { label.textContent = `${file.name} · cloud save failed`; console.warn(error.message); });
+    .catch((error) => { label.textContent = `${file.name} · ${error.message}`; console.warn(error.message); });
 });
 
 detectBtn?.addEventListener("click", async () => {
@@ -1473,7 +1473,7 @@ soilImageInput?.addEventListener("change", () => {
   label.textContent = `${file.name} · saving`;
   saveImageToCloud(file, "soil")
     .then(() => { label.textContent = `${file.name} · saved`; })
-    .catch((error) => { label.textContent = `${file.name} · cloud save failed`; console.warn(error.message); });
+    .catch((error) => { label.textContent = `${file.name} · ${error.message}`; console.warn(error.message); });
 });
 schemeChatForm?.addEventListener("submit", (event) => {
   event.preventDefault();

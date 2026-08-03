@@ -62,35 +62,42 @@ const adminSections = [
   { title: "KrishiBaba", keys: ["chatAnswer"] }
 ];
 
+const editableProfileFields = [
+  ["fullName", "Name"], ["mobile", "Mobile"], ["age", "Age"], ["gender", "Gender"],
+  ["village", "Village"], ["district", "District"], ["state", "State"], ["language", "Language"],
+  ["landSize", "Land"], ["ownership", "Ownership"], ["soilType", "Soil"], ["irrigation", "Irrigation"],
+  ["primaryCrop", "Crop"], ["season", "Season"], ["sowingDate", "Sowing date"],
+  ["fertilizer", "Fertilizer"], ["problem", "Recent problem"], ["harvest", "Expected harvest"],
+  ["aadhaar", "Aadhaar last 4"], ["bank", "Bank linked"], ["pmkisan", "PM-KISAN"], ["internet", "Internet access"]
+];
+
 function renderProfile(profile = {}) {
-  const fields = [
-    ["Name", profile.fullName], ["Mobile", profile.mobile], ["Age", profile.age], ["Gender", profile.gender],
-    ["Village", profile.village], ["District", profile.district], ["State", profile.state], ["Language", profile.language],
-    ["Land", profile.landSize], ["Ownership", profile.ownership], ["Soil", profile.soilType], ["Irrigation", profile.irrigation],
-    ["Crop", profile.primaryCrop], ["Season", profile.season], ["Bank linked", profile.bank], ["PM-KISAN", profile.pmkisan],
-    ["Registered", formatDate(profile.createdAt)], ["Last login", formatDate(profile.lastLoginAt)]
-  ];
-  return `<dl class="admin-profile-grid">${fields.map(([label, value]) => `<div><dt>${escapeAdminHtml(label)}</dt><dd>${escapeAdminHtml(value || "Not provided")}</dd></div>`).join("")}</dl>`;
+  return `<div class="admin-profile-grid">${editableProfileFields.map(([key, label]) => `<label><span>${escapeAdminHtml(label)}</span><input data-profile-field="${key}" value="${escapeAdminHtml(profile[key] ?? "")}" /></label>`).join("")}
+    <label><span>New password (optional)</span><input data-profile-password type="password" minlength="8" maxlength="32" autocomplete="new-password" /></label>
+    <div class="admin-readonly"><span>Registered</span><strong>${escapeAdminHtml(formatDate(profile.createdAt))}</strong></div>
+    <div class="admin-readonly"><span>Last login</span><strong>${escapeAdminHtml(formatDate(profile.lastLoginAt))}</strong></div></div>`;
 }
 
 function renderUploads(uploads = []) {
   if (!uploads.length) return `<p class="admin-empty-row">No crop or soil images have been uploaded.</p>`;
   return `<div class="admin-upload-grid">${uploads.map((upload) => {
     const safeUrl = /^https:\/\/res\.cloudinary\.com\//i.test(upload.secureUrl || "") ? upload.secureUrl : "";
-    return `<article class="admin-upload-card">${safeUrl ? `<img src="${escapeAdminHtml(safeUrl)}" alt="${escapeAdminHtml(upload.kind || "farm")} upload" loading="lazy" />` : ""}<div><strong>${escapeAdminHtml(upload.kind || "Image")}</strong><span>${escapeAdminHtml(upload.originalName || "Image")}</span><span>${escapeAdminHtml(formatDate(upload.createdAt))}</span>${safeUrl ? `<a href="${escapeAdminHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">Open Cloudinary image</a>` : ""}</div></article>`;
+    return `<article class="admin-upload-card" data-upload-public-id="${escapeAdminHtml(upload.publicId || "")}">${safeUrl ? `<img src="${escapeAdminHtml(safeUrl)}" alt="${escapeAdminHtml(upload.kind || "farm")} upload" loading="lazy" />` : ""}<div><label>Name<input data-upload-name value="${escapeAdminHtml(upload.originalName || "Image")}" /></label><label>Type<select data-upload-kind><option value="crop"${upload.kind === "crop" ? " selected" : ""}>Crop</option><option value="plant"${upload.kind === "plant" ? " selected" : ""}>Plant</option><option value="soil"${upload.kind === "soil" ? " selected" : ""}>Soil</option></select></label><span>${escapeAdminHtml(formatDate(upload.createdAt))}</span>${safeUrl ? `<a href="${escapeAdminHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">Open Cloudinary image</a>` : ""}<div class="admin-inline-actions"><button type="button" data-save-upload>Save</button><button class="danger" type="button" data-delete-upload>Delete</button></div></div></article>`;
   }).join("")}</div>`;
 }
 
 function renderFarmerDetail(data) {
   const detail = document.getElementById("adminFarmerDetail");
   const sections = data.analysis?.sections || {};
-  detail.innerHTML = `<div class="admin-detail-head"><div><p>Farmer data center</p><h2>${escapeAdminHtml(data.profile.fullName || "Farmer")}</h2><span>Last dashboard update: ${escapeAdminHtml(formatDate(data.analysis?.updatedAt))}</span></div></div>
-    <section class="admin-data-section"><h3>Registered profile</h3>${renderProfile(data.profile)}</section>
+  detail.dataset.farmerId = data.profile.id;
+  detail.innerHTML = `<div class="admin-detail-head"><div><p>Farmer data center</p><h2>${escapeAdminHtml(data.profile.fullName || "Farmer")}</h2><span>Last dashboard update: ${escapeAdminHtml(formatDate(data.analysis?.updatedAt))}</span></div><button class="danger" type="button" data-delete-farmer>Delete farmer</button></div>
+    <p class="admin-action-note" id="adminActionNote" role="status"></p>
+    <section class="admin-data-section"><div class="admin-section-heading"><h3>Registered profile</h3><button type="button" data-save-profile>Save profile</button></div>${renderProfile(data.profile)}</section>
     <section class="admin-data-section"><h3>Uploaded images</h3>${renderUploads(data.uploads)}</section>
     ${adminSections.map((section, index) => {
       const content = section.keys.map((key) => sections[key] || "").filter(Boolean).join("<hr>");
-      return `<section class="admin-data-section"><h3>${index + 1}. ${escapeAdminHtml(section.title)}</h3><div class="admin-saved-result">${content ? sanitizeSavedHtml(content) : `<p class="admin-empty-row">No saved result yet.</p>`}</div></section>`;
-    }).join("")}`;
+      return `<section class="admin-data-section"><h3>${index + 1}. ${escapeAdminHtml(section.title)}</h3><div class="admin-saved-result">${content ? sanitizeSavedHtml(content) : `<p class="admin-empty-row">No saved result yet.</p>`}</div>${section.keys.map((key) => `<label class="admin-analysis-editor"><span>Edit ${escapeAdminHtml(key)}</span><textarea data-analysis-field="${key}">${escapeAdminHtml(sections[key] || "")}</textarea></label>`).join("")}</section>`;
+    }).join("")}<div class="admin-bottom-actions"><button type="button" data-save-analysis>Save dashboard data</button><button class="danger" type="button" data-delete-analysis>Delete saved dashboard data</button></div>`;
 }
 
 if (adminPage === "admin-login") {
@@ -121,8 +128,26 @@ if (adminPage === "admin-dashboard") {
   const userCount = document.getElementById("adminUserCount");
   const search = document.getElementById("adminUserSearch");
   let users = [];
+  let activeFarmerId = "";
+
+  function showActionNote(message, isError = false) {
+    const note = document.getElementById("adminActionNote");
+    if (!note) return;
+    note.textContent = message;
+    note.classList.toggle("error", isError);
+  }
+
+  async function loadUsers(preferredFarmerId = activeFarmerId) {
+    const data = await adminRequest({ action: "users" });
+    users = data.users || [];
+    userCount.textContent = `${users.length} registered farmer${users.length === 1 ? "" : "s"}`;
+    renderUsers(search?.value || "");
+    const preferred = preferredFarmerId && userList.querySelector(`[data-farmer-id="${CSS.escape(preferredFarmerId)}"]`);
+    (preferred || userList.querySelector("[data-farmer-id]"))?.click();
+  }
 
   async function openFarmer(farmerId, button) {
+    activeFarmerId = farmerId;
     document.querySelectorAll(".admin-user-button").forEach((item) => item.classList.toggle("active", item === button));
     document.getElementById("adminFarmerDetail").innerHTML = `<div class="admin-empty">Loading farmer data...</div>`;
     try {
@@ -139,13 +164,67 @@ if (adminPage === "admin-dashboard") {
     userList.querySelectorAll("[data-farmer-id]").forEach((button) => button.addEventListener("click", () => openFarmer(button.dataset.farmerId, button)));
   }
 
-  adminRequest({ action: "users" }).then((data) => {
-    users = data.users || [];
-    userCount.textContent = `${users.length} registered farmer${users.length === 1 ? "" : "s"}`;
-    renderUsers();
-    userList.querySelector("[data-farmer-id]")?.click();
-  }).catch((error) => {
+  loadUsers().catch((error) => {
     userCount.textContent = error.message;
+  });
+
+  document.getElementById("adminFarmerDetail")?.addEventListener("click", async (event) => {
+    const button = event.target.closest("button");
+    if (!button || !activeFarmerId) return;
+    try {
+      if (button.matches("[data-save-profile]")) {
+        const profile = Object.fromEntries([...document.querySelectorAll("[data-profile-field]")].map((input) => [input.dataset.profileField, input.value]));
+        const password = document.querySelector("[data-profile-password]")?.value || "";
+        await adminRequest({ action: "update-farmer", farmerId: activeFarmerId, profile, password });
+        showActionNote("Profile saved.");
+        await loadUsers(activeFarmerId);
+      }
+      if (button.matches("[data-delete-farmer]") && confirm("Delete this farmer, all saved analysis, and all uploaded images? This cannot be undone.")) {
+        const result = await adminRequest({ action: "delete-farmer", farmerId: activeFarmerId });
+        activeFarmerId = "";
+        await loadUsers();
+        if (result.cloudDeleteFailures) alert(`${result.cloudDeleteFailures} cloud image could not be removed, but the user data was deleted.`);
+      }
+      if (button.matches("[data-save-analysis]")) {
+        const sections = Object.fromEntries([...document.querySelectorAll("[data-analysis-field]")].map((input) => [input.dataset.analysisField, input.value]));
+        await adminRequest({ action: "update-analysis", farmerId: activeFarmerId, sections });
+        showActionNote("Dashboard data saved.");
+      }
+      if (button.matches("[data-delete-analysis]") && confirm("Delete all saved dashboard analysis for this farmer?")) {
+        await adminRequest({ action: "delete-analysis", farmerId: activeFarmerId });
+        await openFarmer(activeFarmerId, document.querySelector(`[data-farmer-id="${CSS.escape(activeFarmerId)}"]`));
+      }
+      const card = button.closest("[data-upload-public-id]");
+      if (card && button.matches("[data-save-upload]")) {
+        await adminRequest({ action: "update-upload", farmerId: activeFarmerId, publicId: card.dataset.uploadPublicId, originalName: card.querySelector("[data-upload-name]").value, kind: card.querySelector("[data-upload-kind]").value });
+        showActionNote("Image details saved.");
+      }
+      if (card && button.matches("[data-delete-upload]") && confirm("Delete this image from Cloudinary and the dashboard record?")) {
+        await adminRequest({ action: "delete-upload", farmerId: activeFarmerId, publicId: card.dataset.uploadPublicId });
+        await openFarmer(activeFarmerId, document.querySelector(`[data-farmer-id="${CSS.escape(activeFarmerId)}"]`));
+      }
+    } catch (error) {
+      showActionNote(error.message, true);
+    }
+  });
+
+  document.getElementById("adminCreateUserBtn")?.addEventListener("click", () => {
+    activeFarmerId = "";
+    document.querySelectorAll(".admin-user-button").forEach((item) => item.classList.remove("active"));
+    document.getElementById("adminFarmerDetail").innerHTML = `<form class="admin-create-form" id="adminCreateForm"><h2>Add farmer</h2><label>Name<input name="fullName" required maxlength="60" /></label><label>Mobile<input name="mobile" required inputmode="numeric" maxlength="10" /></label><label>Temporary password<input name="password" required type="password" minlength="8" maxlength="32" /></label><button type="submit">Create farmer</button><p class="admin-action-note" role="status"></p></form>`;
+    document.getElementById("adminCreateForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+      const note = event.currentTarget.querySelector("[role=status]");
+      try {
+        const result = await adminRequest({ action: "create-farmer", profile: { fullName: values.fullName, mobile: values.mobile }, password: values.password });
+        activeFarmerId = result.profile.id;
+        await loadUsers(activeFarmerId);
+      } catch (error) {
+        note.textContent = error.message;
+        note.classList.add("error");
+      }
+    });
   });
   search?.addEventListener("input", () => renderUsers(search.value));
   document.getElementById("adminLogoutBtn")?.addEventListener("click", () => {
