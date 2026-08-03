@@ -76,6 +76,11 @@ function applyDashboardAnalysis(analysis) {
     const element = document.getElementById(id);
     if (element && typeof html === "string" && html.trim()) element.innerHTML = html;
   }
+  const restoredWeatherAdvice = weatherResult?.querySelector("#krishiBabaWeatherAdvice");
+  if (restoredWeatherAdvice && longTermResult) {
+    longTermResult.querySelector("#krishiBabaWeatherAdvice")?.remove();
+    longTermResult.appendChild(restoredWeatherAdvice);
+  }
   if (analysis.signals && typeof analysis.signals === "object") Object.assign(dashboardSignals, analysis.signals);
   updateDashboardMetrics();
   return true;
@@ -509,8 +514,17 @@ function cleanDraftText(text) {
     .trim();
 }
 
+function escapeDashboardHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function renderAiText(text = "") {
-  return kgCleanAiText(text).replace(/\n/g, "<br>");
+  return escapeDashboardHtml(kgCleanAiText(text)).replace(/\n/g, "<br>");
 }
 
 function isOfflineLikeError(error) {
@@ -871,16 +885,42 @@ function renderCropResult(data, mode = diseaseMode()) {
   const crops = getPlantSuggestions(data);
   const isPlant = data?.result?.is_plant || data?.result?.is_plant_probability ? data.result.is_plant : null;
   const isHealthy = health?.is_healthy || resultHealth?.is_healthy;
-  const row = (item, label) => `<div class="diagnosis-row"><strong>${item.name}</strong><p>${label}: ${(item.probability * 100).toFixed(2)}%</p><p>Scientific name: ${item.scientific_name || "Not available"}</p></div>`;
-  const suggestionBlock = mode === "plant" && !crops.length
-    ? ""
-    : `<h3>${mode === "plant" ? "Plant suggestions" : "Crop / plant suggestions"}</h3>${crops.map((item) => row(item, "Probability")).join("") || "<p>No crop or plant suggestions returned.</p>"}`;
-  const diseaseBlock = diseases.length
-    ? diseases.map((item) => row(item, "Confidence")).join("")
-    : `<p>${isHealthy?.binary ? "No disease detected. Plant appears healthy from the API response." : "No disease suggestions returned by the API."}</p>`;
+  const topDisease = diseases[0] || null;
+  const topPlant = crops[0] || null;
+  const diseaseConfidence = Math.max(0, Math.min(100, Number(topDisease?.probability || 0) * 100));
+  const plantConfidence = Math.max(0, Math.min(100, Number(isPlant?.probability ?? topPlant?.probability ?? 0) * 100));
+  const healthConfidence = Math.max(0, Math.min(100, Number(isHealthy?.probability || 0) * 100));
+  const statusClass = isPlant?.binary === false ? "uncertain" : isHealthy?.binary === true && !topDisease ? "healthy" : topDisease ? "attention" : "uncertain";
+  const confidenceLabel = isPlant?.binary === false
+    ? "Retake the image"
+    : isHealthy?.binary === true && !topDisease
+      ? "Healthy signal"
+      : diseaseConfidence >= 85
+        ? "Strong visual match"
+        : diseaseConfidence >= 60
+          ? "Moderate visual match"
+          : "Low-confidence match";
+  const diagnosisTitle = isPlant?.binary === false
+    ? "Plant not clearly detected"
+    : isHealthy?.binary === true && !topDisease
+      ? "No clear disease detected"
+      : topDisease
+        ? `Likely ${escapeDashboardHtml(topDisease.name)}`
+        : "Diagnosis needs confirmation";
+  const diagnosisCopy = topDisease
+    ? `The image has a ${diseaseConfidence.toFixed(0)}% visual match with this condition. Treat this as a screening result and confirm symptoms before applying any treatment.`
+    : isHealthy?.binary === true
+      ? "The scan did not return a strong disease match. Continue routine monitoring and scan again if symptoms change."
+      : "The image did not provide enough evidence for a reliable diagnosis. Retake it in daylight with one affected leaf or stem filling the frame.";
+  const alternatives = diseases.slice(1, 3).map((item) => `${escapeDashboardHtml(item.name)} ${Math.round(item.probability * 100)}%`).join(" · ");
+  const treatmentPanel = isPlant?.binary === false
+    ? `<div class="crop-treatment-card"><span>Image check</span><h3>Retake the photo</h3><p>Use daylight, avoid a blurred background, and let one affected leaf, stem, fruit, or whole plant fill most of the frame.</p></div>`
+    : diseases.length || isHealthy?.binary === false
+      ? `<div id="cropTreatmentPlan" class="crop-treatment-loading"><span class="empty-state">Preparing safe next steps...</span></div>`
+      : `<div class="crop-treatment-card"><span>Next check</span><h3>Continue monitoring</h3><p>Keep the plant under observation, maintain normal crop care, and scan again with a clear close-up if spots, wilting, discoloration, or spread appears.</p></div>`;
   dashboardSignals.diseaseScore = calculateDiseaseScore(data);
   updateDashboardMetrics();
-  cropResult.innerHTML = `<div class="diagnosis"><div class="diagnosis-row"><strong>Status: ${data.status || "Completed"}</strong><p>Model: ${data.model_version || (mode === "plant" ? "Plant.id health assessment" : "crop health")}</p>${isPlant ? `<p>Plant detected: ${isPlant?.binary ? "Yes" : "No"} (${(((isPlant?.probability || 0) * 100)).toFixed(2)}%)</p>` : ""}${isHealthy ? `<p>Healthy: ${isHealthy.binary ? "Yes" : "No"} (${(((isHealthy.probability || 0) * 100)).toFixed(2)}%)</p>` : ""}</div><h3>Disease / health suggestions</h3>${diseaseBlock}${suggestionBlock}<details><summary>Raw API data</summary><pre>${JSON.stringify(data, null, 2)}</pre></details></div>`;
+  cropResult.innerHTML = `<div class="crop-diagnosis"><div class="crop-diagnosis-hero"><span class="diagnosis-status ${statusClass}">${confidenceLabel}</span><h3>${diagnosisTitle}</h3><p>${diagnosisCopy}</p></div><div class="diagnosis-metrics"><span><b>${topDisease ? `${diseaseConfidence.toFixed(0)}%` : "—"}</b>Disease match</span><span><b>${isPlant ? `${plantConfidence.toFixed(0)}%` : "—"}</b>Plant detected</span><span><b>${isHealthy ? `${healthConfidence.toFixed(0)}%` : "—"}</b>Health signal</span></div><div class="diagnosis-evidence"><article><span>Most likely issue</span><strong>${escapeDashboardHtml(topDisease?.name || "No confident match")}</strong><p>${topDisease?.scientific_name ? `<em>${escapeDashboardHtml(topDisease.scientific_name)}</em>` : "Scientific name unavailable"}</p>${alternatives ? `<small>Also considered: ${alternatives}</small>` : ""}</article><article><span>Plant match</span><strong>${escapeDashboardHtml(topPlant?.name || profile.primaryCrop || "Not identified")}</strong><p>${topPlant?.scientific_name ? `<em>${escapeDashboardHtml(topPlant.scientific_name)}</em>` : "Compare the result with your registered crop."}</p><small>${topPlant ? `${Math.round(topPlant.probability * 100)}% image similarity` : "No reliable crop match returned"}</small></article></div>${treatmentPanel}<details class="technical-details"><summary>Technical scan details</summary><p>Status: ${escapeDashboardHtml(data.status || "Completed")} · Model: ${escapeDashboardHtml(data.model_version || (mode === "plant" ? "Plant.id health assessment" : "crop health"))}</p><pre>${escapeDashboardHtml(JSON.stringify(data, null, 2))}</pre></details></div>`;
 }
 
 function nextTechniqueWindowKey(date = new Date()) {
@@ -981,7 +1021,7 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
     const dayLabel = new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric" });
     return `<div class="forecast-day" role="listitem"><div class="forecast-day-head"><strong>${dayLabel}</strong><span>${weatherCodeText(day.code)}</span></div><div class="rain-plot" title="${day.rain.toFixed(1)} mm rain"><span style="--rain-height:${rainHeight.toFixed(1)}%"></span><b>${day.rain.toFixed(1)}</b><small>mm</small></div><div class="temperature-track" aria-label="Temperature ${day.min.toFixed(0)} to ${day.max.toFixed(0)} degrees Celsius"><span style="--temp-start:${temperatureStart.toFixed(1)}%;--temp-width:${temperatureWidth.toFixed(1)}%"></span></div><div class="temperature-labels"><b>${day.min.toFixed(0)}°</b><b>${day.max.toFixed(0)}°</b></div><div class="forecast-wind">Wind ${day.wind.toFixed(0)} km/h</div></div>`;
   }).join("");
-  weatherResult.innerHTML = `<div class="forecast-board"><div class="forecast-summary"><div><span class="eyebrow">Your location</span><h3>${place}</h3></div><div class="forecast-summary-metrics"><span><b>${totalRain.toFixed(1)} mm</b>10-day rain</span><span><b>${rainyDays}</b>rain-likely days</span><span><b>${averageWind.toFixed(0)} km/h</b>average wind</span></div></div><div class="forecast-legend"><span><i class="legend-rain"></i>Rainfall</span><span><i class="legend-temp"></i>Temperature range</span><small>${temperatureFloor}°C to ${temperatureCeiling}°C scale</small></div><div class="forecast-scroll"><div class="forecast-days" role="list" aria-label="10-day weather forecast">${forecastColumns}</div></div><div class="weather-advice" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing a short field recommendation...</p></div></div>`;
+  weatherResult.innerHTML = `<div class="forecast-board"><div class="forecast-summary"><div><span class="eyebrow">Your location</span><h3>${place}</h3></div><div class="forecast-summary-metrics"><span><b>${totalRain.toFixed(1)} mm</b>10-day rain</span><span><b>${rainyDays}</b>rain-likely days</span><span><b>${averageWind.toFixed(0)} km/h</b>average wind</span></div></div><div class="forecast-legend"><span><i class="legend-rain"></i>Rainfall</span><span><i class="legend-temp"></i>Temperature range</span><small>${temperatureFloor}°C to ${temperatureCeiling}°C scale</small></div><div class="forecast-scroll"><div class="forecast-days" role="list" aria-label="10-day weather forecast">${forecastColumns}</div></div></div>`;
   cropAdvice.innerHTML = `<article class="crop-action-card"><div class="crop-action-heading"><span class="eyebrow">Based on the live forecast</span><h3>10-day field action plan</h3></div><ul>${advice.map((item) => `<li>${item}</li>`).join("")}</ul><div class="crop-ai-note" id="krishiBabaCropAdvice"><strong>KrishiBaba recommendation</strong><p>Preparing one profile-aware recommendation...</p></div></article>`;
 
   if (longTerm?.daily?.time?.length) {
@@ -1000,6 +1040,7 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
     const avgTemp = days.reduce((sum, day) => sum + ((day.min + day.max) / 2), 0) / Math.max(days.length, 1);
     longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Short-term fallback</span><h3>Crop growth direction</h3></div><div class="outlook-metrics"><span><b>${rain16.toFixed(1)} mm</b>10-day rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>Weekly</b>Re-check</span></div><p class="growth-note">The 30-day source is unavailable, so this direction uses the current 10-day forecast. Re-check before sowing a long-duration crop.</p>`;
   }
+  longTermResult.insertAdjacentHTML("beforeend", `<div class="weather-advice" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing a short field recommendation...</p></div>`);
 
   const soilStatus = document.getElementById("soilStatus");
   if (soilStatus) soilStatus.textContent = days.some((day) => day.rain > 10) ? "Moisture risk is high. Keep drainage clear and avoid over-irrigation." : "Moisture appears manageable. Irrigate based on soil feel and crop stage.";
@@ -1029,6 +1070,7 @@ async function answerQuestion(question) {
   } catch (error) {
     console.warn("KrishiBaba chat failed:", error);
     if (isOfflineLikeError(error)) throw error;
+    if (kgActiveLanguage !== "en-IN") throw error;
     if (q.includes("krishibaba") || q.includes("grok") || q.trim().length > 0) {
       return `${error.message} Meanwhile, based on your profile, check weather, soil moisture, disease symptoms, and crop stage before taking action.`;
     }
@@ -1041,13 +1083,19 @@ async function answerQuestion(question) {
 }
 
 async function renderDiseaseTreatment(data) {
+  const diseases = getDiseaseSuggestions(data).slice(0, 3);
+  const plants = getPlantSuggestions(data).slice(0, 2);
+  const treatmentTarget = document.getElementById("cropTreatmentPlan");
   try {
-    const treatment = await kgAiText(`You are KrishiBaba, a farmer crop disease advisor. Maximum 100 words only. Based on this crop disease API response, explain the easiest low-cost treatment in the selected website language. Include likely disease, low-cost government-supported options if available, medicine or active ingredient names, simple application method, safety precautions, and when to contact an agriculture officer. Do not invent a guaranteed cure.\nAPI response: ${JSON.stringify(data)}`);
-    cropResult.insertAdjacentHTML("beforeend", `<div class="diagnosis-row"><strong>KrishiBaba low-cost treatment plan</strong><p>${renderAiText(treatment)}</p></div>`);
+    const treatment = await kgAiText(`You are KrishiBaba, a cautious crop-health screening assistant. Write a practical response in the selected website language using four short labels: Confirm first, Do now, Avoid, Get help. Maximum 140 words.
+Treat the image result as preliminary, not a confirmed laboratory diagnosis. Do not promise a cure. Do not recommend a pesticide, fungicide, antibiotic, dosage, or government scheme unless it is genuinely appropriate to the named condition. Never describe a bacterial disease as fungal or present fungicide as its cure. Prefer isolation, sanitation, symptom verification, and local KVK or agriculture-officer confirmation before chemical treatment.
+Farmer crop: ${profile.primaryCrop || "not provided"}. Location: ${profile.state || savedLocation?.state || "not provided"}.
+Screening summary: ${JSON.stringify({ diseases, plants })}`);
+    if (treatmentTarget) treatmentTarget.innerHTML = `<div class="crop-treatment-card"><span>KrishiBaba action plan</span><h3>Practical next steps</h3><p>${renderAiText(treatment)}</p></div>`;
     saveDashboardSnapshot("crop-health", cropResult);
     kgSpeak(treatment, kgActiveLanguage);
   } catch (error) {
-    cropResult.insertAdjacentHTML("beforeend", `<div class="diagnosis-row"><strong>Treatment plan unavailable</strong><p>${error.message}</p><p>KrishiBaba treatment guidance could not be loaded. Please consult a local agriculture officer with this diagnosis.</p></div>`);
+    if (treatmentTarget) treatmentTarget.innerHTML = `<div class="crop-treatment-card"><span>Safe next step</span><h3>Confirm before treating</h3><p>Isolate visibly affected leaves or plants, avoid spraying an unconfirmed chemical, take clear close-up photos, and show the screening result to a local KVK or agriculture officer.</p><small>${escapeDashboardHtml(error.message)}</small></div>`;
     saveDashboardSnapshot("crop-health", cropResult);
   }
 }
@@ -1193,7 +1241,7 @@ detectBtn?.addEventListener("click", async () => {
     const base64 = await fileToBase64(file);
     const data = mode === "plant" ? await detectPlantDisease(base64) : await detectDisease(base64);
     renderCropResult(data, mode);
-    if (hasActionableDisease(data)) {
+    if (hasActionableDisease(data) && document.getElementById("cropTreatmentPlan")) {
       await renderDiseaseTreatment(data);
     }
     saveDashboardSnapshot("crop-health", cropResult);

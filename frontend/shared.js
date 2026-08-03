@@ -174,25 +174,63 @@ function kgAiLanguageGuard(lang = kgActiveLanguage) {
   ].join(" ");
 }
 
-async function kgAiText(prompt, options = {}) {
-  const responseLanguage = options.language || kgActiveLanguage;
-  const guardedPrompt = `${kgAiLanguageGuard(responseLanguage)}\nDo not use markdown. Do not use asterisks or double asterisks anywhere.\n\n${prompt}`;
-  const cacheKey = `ai:${responseLanguage}:${kgHashText(guardedPrompt)}`;
-  if (kgAiCache[cacheKey]) return kgAiCache[cacheKey];
+function kgAiTextMatchesLanguage(text, lang = kgActiveLanguage) {
+  if (!text || lang === "en-IN") return Boolean(text);
+  const scriptPatterns = {
+    "hi-IN": /[\u0900-\u097F]/g,
+    "bho-IN": /[\u0900-\u097F]/g,
+    "mr-IN": /[\u0900-\u097F]/g,
+    "har-IN": /[\u0900-\u097F]/g,
+    "gu-IN": /[\u0A80-\u0AFF]/g,
+    "pa-IN": /[\u0A00-\u0A7F]/g,
+    "kn-IN": /[\u0C80-\u0CFF]/g,
+    "ta-IN": /[\u0B80-\u0BFF]/g,
+    "te-IN": /[\u0C00-\u0C7F]/g
+  };
+  const pattern = scriptPatterns[lang];
+  if (!pattern) return Boolean(text);
+  const nativeLetters = (String(text).match(pattern) || []).length;
+  const allLetters = (String(text).match(/\p{L}/gu) || []).length;
+  const minimumRatio = String(text).trim().startsWith("{") ? 0.22 : 0.55;
+  return nativeLetters >= 12 && nativeLetters / Math.max(allLetters, 1) >= minimumRatio;
+}
 
+async function kgRequestAiText(prompt, maxTokens) {
   const response = await fetch(kgApiUrl("/api/ai"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: guardedPrompt, maxTokens: options.maxTokens })
+    body: JSON.stringify({ prompt, maxTokens })
   });
-
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
     throw new Error(data.error || `AI request failed with status ${response.status}`);
   }
-
   const data = await response.json();
-  const text = kgCleanAiText(data?.text || "");
+  return kgCleanAiText(data?.text || "");
+}
+
+async function kgAiText(prompt, options = {}) {
+  const responseLanguage = options.language || kgActiveLanguage;
+  const guardedPrompt = `${kgAiLanguageGuard(responseLanguage)}\nDo not use markdown. Do not use asterisks or double asterisks anywhere.\n\n${prompt}`;
+  const cacheKey = `ai:${responseLanguage}:${kgHashText(guardedPrompt)}`;
+  if (kgAiCache[cacheKey] && kgAiTextMatchesLanguage(kgAiCache[cacheKey], responseLanguage)) return kgAiCache[cacheKey];
+  if (kgAiCache[cacheKey]) {
+    delete kgAiCache[cacheKey];
+    localStorage.setItem("krishigyaanAiCache", JSON.stringify(kgAiCache));
+  }
+
+  let text = await kgRequestAiText(guardedPrompt, options.maxTokens);
+  if (!kgAiTextMatchesLanguage(text, responseLanguage)) {
+    const label = kgCurrentLanguageLabel(responseLanguage);
+    text = await kgRequestAiText(`${kgAiLanguageGuard(responseLanguage)}
+Rewrite the response below completely in ${label}. Use only the native script of ${label} from the first word to the last. Keep only unavoidable official abbreviations, numbers, medicine names, and scientific names unchanged. Return only the corrected response, without an explanation.
+
+Response to rewrite:
+${text}`, options.maxTokens);
+  }
+  if (!kgAiTextMatchesLanguage(text, responseLanguage)) {
+    throw new Error(`KrishiBaba could not produce a complete ${kgCurrentLanguageLabel(responseLanguage)} response. Please try again.`);
+  }
   if (text) {
     kgAiCache[cacheKey] = text;
     localStorage.setItem("krishigyaanAiCache", JSON.stringify(kgAiCache));

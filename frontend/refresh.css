@@ -1031,11 +1031,6 @@ textarea {
   border-radius: 8px;
 }
 
-.forecast-day:first-child {
-  border-color: #88a990;
-  background: #f4f8f2;
-}
-
 .forecast-day-head strong,
 .forecast-day-head span {
   display: block;
@@ -1253,6 +1248,157 @@ textarea {
   color: #505d53;
   font-size: 0.84rem;
   line-height: 1.6;
+}
+
+.crop-health-panel .spacious-result {
+  max-height: none;
+  overflow: visible;
+}
+
+.crop-diagnosis {
+  display: grid;
+  gap: 14px;
+}
+
+.crop-diagnosis-hero {
+  padding: 18px;
+  background: #f7f9f5;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.crop-diagnosis-hero h3 {
+  margin: 9px 0 6px;
+  font-size: 1.18rem;
+}
+
+.crop-diagnosis-hero p,
+.diagnosis-evidence p,
+.diagnosis-evidence small,
+.crop-treatment-card p,
+.crop-treatment-card small {
+  margin: 0;
+  color: #566258;
+  font-size: 0.8rem;
+  line-height: 1.58;
+}
+
+.diagnosis-status {
+  display: inline-flex;
+  padding: 5px 8px;
+  color: #735816;
+  background: #fff2c8;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.diagnosis-status.healthy {
+  color: #23623d;
+  background: #dff2e5;
+}
+
+.diagnosis-status.uncertain {
+  color: #5d6860;
+  background: #e9eeea;
+}
+
+.diagnosis-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.diagnosis-metrics span {
+  padding: 12px;
+  color: var(--muted);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.68rem;
+}
+
+.diagnosis-metrics b {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.diagnosis-evidence {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.diagnosis-evidence article {
+  min-width: 0;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.diagnosis-evidence article > span,
+.crop-treatment-card > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diagnosis-evidence strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--deep-green);
+  font-size: 0.92rem;
+}
+
+.diagnosis-evidence small {
+  display: block;
+  margin-top: 7px;
+}
+
+.crop-treatment-card {
+  padding: 16px;
+  background: #edf4eb;
+  border-left: 3px solid var(--fresh-green);
+  border-radius: 8px;
+}
+
+.crop-treatment-card h3 {
+  margin: 0 0 7px;
+  font-size: 1rem;
+}
+
+.crop-treatment-card small {
+  display: block;
+  margin-top: 8px;
+}
+
+.technical-details {
+  padding: 10px 12px;
+  color: var(--muted);
+  background: #f7f8f5;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.72rem;
+}
+
+.technical-details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.technical-details pre {
+  max-height: 260px;
+  margin-top: 10px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .crop-action-card {
@@ -1997,6 +2143,11 @@ textarea {
   }
 
   .outlook-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .diagnosis-metrics,
+  .diagnosis-evidence {
     grid-template-columns: 1fr;
   }
 
