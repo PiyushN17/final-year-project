@@ -109,11 +109,12 @@
           <div class="scheme-tools">
             <form class="chat-box" id="schemeChatForm">
               <div class="chat-input-wrap">
-                <textarea id="schemeQuestion" placeholder="Ask a scheme-related doubt..."></textarea>
+                <textarea id="schemeQuestion" required minlength="1" placeholder="Ask a scheme-related doubt..." aria-describedby="schemeChatValidation"></textarea>
                 <button class="mic-button" id="schemeSpeechBtn" type="button" aria-label="Speak your scheme doubt"><i data-lucide="mic"></i></button>
               </div>
               <div class="chat-actions">
-                <button class="btn btn-primary" type="submit"><i data-lucide="bot"></i>Ask KrishiBaba</button>
+                <button class="btn btn-primary" id="schemeChatSubmitBtn" type="submit" disabled><i data-lucide="bot"></i>Ask KrishiBaba</button>
+                <span class="speech-status" id="schemeChatValidation" role="status">Enter a question to continue.</span>
                 <span class="speech-status" id="schemeSpeechStatus"></span>
               </div>
             </form>
@@ -157,7 +158,7 @@
           <div class="panel-copy speakable"><span class="eyebrow"><i data-lucide="bot"></i><span>Ask about your farm</span></span><h2 data-i18n="chatTitle">KrishiBaba</h2><p data-i18n="chatCopy">Ask KrishiBaba about crop selection, pest control, fertilizer, irrigation, schemes, weather, or market readiness.</p></div>
           <form class="chat-box" id="chatForm">
             <div class="chat-input-wrap">
-              <textarea id="chatQuestion" required minlength="3" data-i18n-placeholder="chatPlaceholder" placeholder="Ask your farming question..." aria-describedby="chatValidation"></textarea>
+              <textarea id="chatQuestion" required minlength="1" data-i18n-placeholder="chatPlaceholder" placeholder="Ask your farming question..." aria-describedby="chatValidation"></textarea>
               <button class="mic-button" id="speechToTextBtn" type="button" aria-label="Speak your question"><i data-lucide="mic"></i></button>
             </div>
             <div class="chat-actions">
@@ -181,6 +182,6 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="locales.js"></script>
     <script src="shared.js"></script>
-    <script src="dashboard.js?v=5"></script>
+    <script src="dashboard.js?v=6"></script>
   </body>
 </html>

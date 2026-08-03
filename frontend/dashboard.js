@@ -22,6 +22,8 @@ const soilResult = document.getElementById("soilResult");
 const schemeMatcher = document.getElementById("schemeMatcher");
 const schemeChatForm = document.getElementById("schemeChatForm");
 const schemeQuestion = document.getElementById("schemeQuestion");
+const schemeChatSubmitBtn = document.getElementById("schemeChatSubmitBtn");
+const schemeChatValidation = document.getElementById("schemeChatValidation");
 const schemeDraftSelect = document.getElementById("schemeDraftSelect");
 const schemeDraftType = document.getElementById("schemeDraftType");
 const schemeDraftLanguage = document.getElementById("schemeDraftLanguage");
@@ -37,6 +39,7 @@ const moistureMetric = document.getElementById("moistureStatus");
 const weatherRiskMetric = document.getElementById("weatherRisk");
 const schemeMatchesMetric = document.getElementById("schemeMatches");
 let speechMicStream = null;
+let schemeChatBusy = false;
 const dashboardSignals = {
   profileScore: 0,
   schemeMatches: 0,
@@ -44,6 +47,8 @@ const dashboardSignals = {
   diseaseScore: null,
   soilScore: null
 };
+
+const SCHEME_DRAFT_LANGUAGE_CODES = ["hi-IN", "en-IN", "gu-IN", "mr-IN", "kn-IN", "ta-IN", "te-IN"];
 
 const schemes = [
   {
@@ -302,7 +307,9 @@ function renderSchemeDraftOptions() {
     ? eligible.map((scheme) => `<option value="${scheme.title}">${uiText(scheme.title)}</option>`).join("")
     : `<option value="">${uiText("No eligible scheme yet")}</option>`;
   if (schemeDraftLanguage) {
-    schemeDraftLanguage.innerHTML = Object.entries(KG_LANGUAGES).map(([code, meta]) => `<option value="${code}">${meta.label}</option>`).join("");
+    schemeDraftLanguage.innerHTML = SCHEME_DRAFT_LANGUAGE_CODES
+      .map((code) => `<option value="${code}">${KG_LANGUAGES[code].label}</option>`)
+      .join("");
     schemeDraftLanguage.value = "en-IN";
   }
   schemeDraftBtn.disabled = !eligible.length;
@@ -420,7 +427,10 @@ async function generateSchemeDraft() {
   schemeAssistantResult.innerHTML = `<span class="empty-state">Generating ${type.toLowerCase()} in ${draftLanguageLabel}...</span>`;
   try {
     const draft = await kgAiText(`Generate a complete, ready-to-print ${type} only in ${draftLanguageLabel} (${draftLanguage}) for this selected scheme: "${scheme.title}".
-Do not use any other language in headings or body.
+Every heading, field label, salutation, instruction, paragraph, declaration, closing, signature label, and enclosure line must be in ${draftLanguageLabel}.
+For a non-English selection, use its native script throughout and translate or naturally transliterate headings, recipient titles, and scheme names. Keep only unavoidable official abbreviations and numbers unchanged.
+Do not include an English translation, bilingual text, language note, explanation, or any text in another language.
+Before returning, silently check the entire draft and rewrite any accidental English structural text into ${draftLanguageLabel}.
 Do not stop after Subject. Generate the full draft from beginning to signature.
 Keep each paragraph short so the full document fits in one response.
 Use the selected scheme details to decide the correct content, documents, purpose, recipient type, and benefit language.
@@ -433,11 +443,13 @@ Never end midway. Include the closing, applicant name, mobile number, place, dat
 Format guide for this draft type:
 ${draftFormatGuide(type)}
 Farmer profile JSON: ${JSON.stringify(updatedProfile)}
-Selected scheme JSON: ${JSON.stringify(scheme)}`, { language: draftLanguage, maxTokens: 1200 });
+Selected scheme JSON: ${JSON.stringify(scheme)}`, { language: draftLanguage, maxTokens: 1400 });
     const cleanDraft = cleanDraftText(draft);
-    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication"><strong>${type} - ${scheme.title} (${draftLanguageLabel})</strong><pre>${cleanDraft}</pre></div>`;
+    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication"><pre>${cleanDraft}</pre></div>`;
     saveDashboardSnapshot("scheme-draft", schemeAssistantResult);
     printDraftBtn.classList.remove("hidden");
+    if ("speechSynthesis" in window && window.speechSynthesis.paused) window.speechSynthesis.resume();
+    kgSpeak(cleanDraft, draftLanguage);
   } catch (error) {
     if (!isOfflineLikeError(error) || !showDashboardSnapshot("scheme-draft", schemeAssistantResult, "application draft", error)) {
       schemeAssistantResult.innerHTML = `<div class="diagnosis-row"><strong>Draft unavailable</strong><p>${error.message}</p></div>`;
@@ -1060,7 +1072,7 @@ detectBtn?.addEventListener("click", async () => {
 
 function updateChatSubmitState() {
   if (!chatQuestion || !chatSubmitBtn) return;
-  const hasQuestion = chatQuestion.value.trim().length >= 3;
+  const hasQuestion = chatQuestion.value.trim().length >= 1;
   chatSubmitBtn.disabled = !hasQuestion;
   if (chatValidation) chatValidation.textContent = hasQuestion ? "Ready to ask." : "Enter a question to continue.";
 }
@@ -1068,10 +1080,20 @@ function updateChatSubmitState() {
 chatQuestion?.addEventListener("input", updateChatSubmitState);
 updateChatSubmitState();
 
+function updateSchemeChatSubmitState() {
+  if (!schemeQuestion || !schemeChatSubmitBtn) return;
+  const hasQuestion = schemeQuestion.value.trim().length >= 1;
+  schemeChatSubmitBtn.disabled = !hasQuestion || schemeChatBusy;
+  if (schemeChatValidation) schemeChatValidation.textContent = schemeChatBusy ? "KrishiBaba is checking..." : hasQuestion ? "Ready to ask." : "Enter a question to continue.";
+}
+
+schemeQuestion?.addEventListener("input", updateSchemeChatSubmitState);
+updateSchemeChatSubmitState();
+
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   const question = chatQuestion.value.trim();
-  if (question.length < 3) {
+  if (question.length < 1) {
     updateChatSubmitState();
     chatQuestion.focus();
     return;
@@ -1100,7 +1122,18 @@ soilImageInput?.addEventListener("change", () => {
 });
 schemeChatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
-  askSchemeAssistant(schemeQuestion.value || "Which schemes am I eligible for?");
+  const question = schemeQuestion.value.trim();
+  if (!question) {
+    updateSchemeChatSubmitState();
+    schemeQuestion.focus();
+    return;
+  }
+  schemeChatBusy = true;
+  updateSchemeChatSubmitState();
+  askSchemeAssistant(question).finally(() => {
+    schemeChatBusy = false;
+    updateSchemeChatSubmitState();
+  });
 });
 
 schemeDraftBtn?.addEventListener("click", generateSchemeDraft);
