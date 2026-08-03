@@ -14,19 +14,23 @@
   </head>
   <body data-page="dashboard">
     <div class="dashboard-page">
-      <aside class="dashboard-sidebar">
-        <a class="brand speakable" href="index.html"><span class="brand-mark"><i data-lucide="sprout"></i></span><span>KrishiGyaan</span></a>
-        <a class="active" href="#overview" data-section-link="overview"><i data-lucide="layout-dashboard"></i><span data-i18n="dashTitle">Your field intelligence center</span></a>
-        <a href="#crop-advisory" data-section-link="crop-advisory"><i data-lucide="sprout"></i><span data-i18n="featureCropTitle">Smart Crop Advisory</span></a>
-        <a href="#weather" data-section-link="weather"><i data-lucide="cloud-sun"></i><span data-i18n="accessWeather">Weather advisory</span></a>
-        <a href="#crop-health" data-section-link="crop-health"><i data-lucide="scan-line"></i><span data-i18n="featureDiseaseTitle">Crop Disease Detection</span></a>
-        <a href="#soil-health" data-section-link="soil-health"><i data-lucide="layers-3"></i><span data-i18n="soilTitle">Soil Health Analysis</span></a>
-        <a href="#schemes" data-section-link="schemes"><i data-lucide="landmark"></i><span data-i18n="schemesTitle">Sahayata Scheme Support</span></a>
-        <a href="#scheme-assistant" data-section-link="scheme-assistant"><i data-lucide="file-pen-line"></i><span>Scheme Assistant</span></a>
-        <a href="#modern-techniques" data-section-link="modern-techniques"><i data-lucide="tractor"></i><span data-i18n="modernTitle">Modern Farming Technique of the Day</span></a>
-        <a href="#ai-chat" data-section-link="ai-chat"><i data-lucide="message-square"></i><span data-i18n="chatTitle">KrishiBaba</span></a>
-        <button id="logoutBtn"><i data-lucide="log-out"></i><span data-i18n="dashLogout">Logout</span></button>
-      </aside>
+      <header class="dashboard-nav">
+        <div class="dashboard-nav-inner">
+          <a class="brand speakable" href="index.html"><span class="brand-mark"><i data-lucide="sprout"></i></span><span>KrishiGyaan</span></a>
+          <nav class="dashboard-nav-links" aria-label="Dashboard navigation">
+            <a class="active" href="#overview" data-section-link="overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></a>
+            <a href="#crop-advisory" data-section-link="crop-advisory"><i data-lucide="sprout"></i><span>Crop advice</span></a>
+            <a href="#weather" data-section-link="weather"><i data-lucide="cloud-sun"></i><span>Weather</span></a>
+            <a href="#crop-health" data-section-link="crop-health"><i data-lucide="scan-line"></i><span>Crop scan</span></a>
+            <a href="#soil-health" data-section-link="soil-health"><i data-lucide="layers-3"></i><span>Soil</span></a>
+            <a href="#schemes" data-section-link="schemes"><i data-lucide="landmark"></i><span>Schemes</span></a>
+            <a href="#scheme-assistant" data-section-link="scheme-assistant"><i data-lucide="file-pen-line"></i><span>Applications</span></a>
+            <a href="#modern-techniques" data-section-link="modern-techniques"><i data-lucide="tractor"></i><span>Learn</span></a>
+            <a href="#ai-chat" data-section-link="ai-chat"><i data-lucide="message-square"></i><span>KrishiBaba</span></a>
+          </nav>
+          <button class="dashboard-logout" id="logoutBtn"><i data-lucide="log-out"></i><span data-i18n="dashLogout">Logout</span></button>
+        </div>
+      </header>
 
       <main class="dashboard-main">
         <section class="dashboard-hero speakable" id="overview">
@@ -85,10 +89,6 @@
             <button class="btn btn-primary" id="detectBtn"><i data-lucide="scan-search"></i><span data-i18n="analyzeCrop">Analyze Health</span></button>
           </div>
           <div class="result-card spacious-result" id="cropResult"><span class="empty-state" data-i18n="scanEmpty">Upload an image to print AI crop health data here.</span></div>
-        </section>
-
-        <section class="feature-grid dashboard-feature-grid">
-          <article class="feature-card speakable" id="voice-support"><i data-lucide="volume-2"></i><h3 data-i18n="voiceTitle">Voice + Local Language Support</h3><p data-i18n="voiceCopy">Click any card, section, or button and KrishiGyaan will dictate that content in your selected local language.</p></article>
         </section>
 
         <section class="dashboard-panel scheme-panel" id="schemes">

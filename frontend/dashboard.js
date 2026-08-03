@@ -45,116 +45,84 @@ const dashboardSignals = {
 
 const schemes = [
   {
-    title: "Agriculture Infrastructure Fund",
-    link: "http://agriinfra.dac.gov.in/",
-    summary: "Credit support for post-harvest management, storage, processing, value addition, and community farming assets.",
-    benefit: "Interest subvention and credit guarantee support for eligible infrastructure projects.",
-    check: (p) => hasLand(p) && (isLargeEnough(p, 1) || isHorticultureCrop(p) || hasIrrigation(p)),
-    reason: "Best fit when the farmer has land and wants storage, processing, value-addition, or infrastructure support."
-  },
-  {
     title: "PM-Kisan Samman Nidhi",
     link: "https://pmkisan.gov.in/",
-    summary: "Income support for eligible landholding farmer families, subject to exclusions.",
-    benefit: "Direct income support of Rs 6,000 per year in installments for eligible farmer families.",
-    check: (p) => hasLand(p) && p.bank !== "No" && p.pmkisan !== "Registered",
-    reason: "Profile suggests landholding and bank access. Final eligibility depends on land records and exclusion criteria."
-  },
-  {
-    title: "ATMA",
-    link: "https://extensionreforms.da.gov.in/DashBoard_Statusatma.aspx",
-    summary: "Training, extension, demonstrations, exposure visits, farmer groups, and advisory support.",
-    benefit: "Access to training, demonstrations, exposure visits, and local extension guidance.",
-    check: (p) => Boolean(p.primaryCrop || p.state || p.district),
-    reason: "Useful for almost every registered farmer seeking training, extension, and field-level advisory."
-  },
-  {
-    title: "AGMARKNET",
-    link: "http://agmarknet.gov.in/PriceAndArrivals/arrivals1.aspx",
-    summary: "Market arrivals and price information to help farmers compare mandis before selling.",
-    benefit: "Better price discovery before selling produce.",
-    check: (p) => Boolean(p.primaryCrop || p.harvest),
-    reason: "Useful when the farmer has a crop and wants market price or arrival information."
-  },
-  {
-    title: "Horticulture",
-    link: "http://midh.gov.in/nhmapplication/feedback/midhKPI.aspx",
-    summary: "Support for fruits, vegetables, flowers, spices, plantation crops, protected cultivation, nurseries, and post-harvest management.",
-    benefit: "Possible subsidy/support for horticulture cultivation, protected farming, nurseries, and post-harvest assets.",
-    check: (p) => isHorticultureCrop(p),
-    reason: "Best fit when the registered crop is horticulture-related."
-  },
-  {
-    title: "Plant Quarantine Clearance",
-    link: "https://pqms.cgg.gov.in/pqms-angular/home",
-    summary: "Clearance support for import/export movement of plants, seeds, planting material, and regulated agricultural items.",
-    benefit: "Clearance pathway for regulated plant, seed, and planting material movement.",
-    check: (p) => /export|import|nursery|seed|planting/i.test(JSON.stringify(p)),
-    reason: "Mostly relevant when the farmer handles seeds, nursery material, import, or export."
-  },
-  {
-    title: "DBT in Agriculture",
-    link: "https://www.dbtdacfw.gov.in/",
-    summary: "Direct benefit transfer platform for agriculture-related subsidies and assistance.",
-    benefit: "Direct subsidy/benefit transfer tracking for eligible agriculture schemes.",
-    check: (p) => p.bank !== "No" && Boolean(p.mobile || p.state),
-    reason: "Profile has basic contact/bank readiness for subsidy benefit tracking."
-  },
-  {
-    title: "Pradhanmantri Krishi Sinchayee Yojana",
-    link: "https://pmksy.gov.in/mis/frmDashboard.aspx",
-    summary: "Irrigation, water-use efficiency, watershed, and micro-irrigation support.",
-    benefit: "Support for irrigation access, water-use efficiency, drip/sprinkler, and watershed-related interventions.",
-    check: (p) => p.irrigation === "Rainfed" || p.irrigation === "Drip" || p.irrigation === "Borewell" || hasLand(p),
-    reason: "Relevant when the farmer needs irrigation support, water efficiency, drip/sprinkler, or better water access."
-  },
-  {
-    title: "Kisan Call Center",
-    link: "https://pmksy.gov.in/mis/frmDashboard.aspx",
-    summary: "Phone-based farming guidance and advisory support.",
-    benefit: "Free or low-cost expert advisory through phone support.",
-    check: (p) => Boolean(p.mobile),
-    reason: "Any farmer with a mobile number can use call-based advisory."
-  },
-  {
-    title: "mKisan",
-    link: "https://mkisan.gov.in/",
-    summary: "Mobile-based agricultural advisories and farmer messages.",
-    benefit: "Mobile advisories for crops, weather, pests, and government updates.",
-    check: (p) => Boolean(p.mobile),
-    reason: "Profile has a mobile number for advisory messages."
-  },
-  {
-    title: "Jaivik Kheti",
-    link: "https://pgsindia-ncof.gov.in/home.aspx",
-    summary: "Organic farming and PGS certification ecosystem.",
-    benefit: "Support pathway for organic farming groups, certification, and organic market trust.",
-    check: (p) => /organic|compost|natural|jaivik|bio/i.test(JSON.stringify(p)),
-    reason: "Best fit when the farmer is using or interested in organic/natural inputs."
-  },
-  {
-    title: "e-Nam",
-    link: "https://enam.gov.in/",
-    summary: "Online agricultural market platform for better market access and price discovery.",
-    benefit: "Market linkage and transparent online trading support.",
-    check: (p) => Boolean(p.primaryCrop || p.harvest),
-    reason: "Useful for farmers preparing to sell produce or compare markets."
-  },
-  {
-    title: "Soil Health Card",
-    link: "https://soilhealth.dac.gov.in/",
-    summary: "Soil testing and crop-wise nutrient recommendation support.",
-    benefit: "Soil testing report with fertilizer and nutrient recommendations.",
-    check: (p) => hasLand(p) || Boolean(p.soilType),
-    reason: "Profile has land or soil details. This scheme helps confirm pH, NPK, organic carbon, and micronutrients."
+    summary: "Income support for eligible cultivable landholding farmer families, subject to the scheme's exclusion rules and verification.",
+    benefit: "Rs 6,000 per year in three DBT installments to an Aadhaar-seeded bank account after land record and e-KYC checks.",
+    check: (p) => hasLand(p) && p.bank !== "No",
+    reason: "Your profile shows land access and bank readiness. The official portal must verify land records, Aadhaar linking, e-KYC, and exclusions."
   },
   {
     title: "Pradhan Mantri Fasal Bima Yojana",
-    link: "https://pmfby.gov.in/ext/rpt/ssfr_17",
-    summary: "Crop insurance support against notified risks and crop loss.",
-    benefit: "Insurance protection against notified crop losses with farmer premium support.",
+    link: "https://pmfby.gov.in/",
+    summary: "Voluntary crop insurance for notified crops and seasons in participating States and Union Territories.",
+    benefit: "Insurance protection against notified crop risks with subsidized farmer premiums and claim support.",
     check: (p) => Boolean(p.primaryCrop && (p.season || p.sowingDate)),
-    reason: "Profile has crop and season/sowing details needed for crop insurance consideration."
+    reason: "Your crop and season details can be checked against current state notifications on the official PMFBY portal."
+  },
+  {
+    title: "Kisan Credit Card",
+    link: "https://fasalrin.gov.in/",
+    summary: "Institutional credit for crop production, post-harvest expenses, farm maintenance, and allied agricultural activities.",
+    benefit: "Flexible short-term farm credit; the sanctioned limit, interest support, security, and documents depend on the lending bank.",
+    check: (p) => hasLand(p) || Boolean(p.primaryCrop),
+    reason: "Your farm or crop profile indicates that KCC information may be useful. Applications are submitted through participating banks."
+  },
+  {
+    title: "Pradhan Mantri Kisan Maan Dhan Yojana",
+    link: "https://rules.myscheme.gov.in/en/check-eligibility/pmkmy?source=myscheme",
+    summary: "A voluntary contributory pension scheme for eligible small and marginal landholding farmers aged 18 to 40.",
+    benefit: "Minimum assured pension of Rs 3,000 per month after age 60, subject to enrollment, contributions, and scheme conditions.",
+    check: (p) => hasLand(p) && Number(p.age) >= 18 && Number(p.age) <= 40 && (!landAcres(p) || landAcres(p) <= 4.94),
+    reason: "Your age and land profile indicate a possible match. Use the official eligibility check for exclusions and contribution details."
+  },
+  {
+    title: "Agriculture Infrastructure Fund",
+    link: "https://agriinfra.dac.gov.in/",
+    summary: "Financing support for eligible post-harvest infrastructure and community farming assets.",
+    benefit: "Interest subvention of 3% per year and credit-guarantee support for eligible loans up to Rs 2 crore, subject to scheme rules.",
+    check: (p) => hasLand(p) && (isLargeEnough(p, 1) || isHorticultureCrop(p) || hasIrrigation(p)),
+    reason: "Potentially relevant for storage, primary processing, value addition, or community farming infrastructure projects."
+  },
+  {
+    title: "Per Drop More Crop",
+    link: "https://bhuvan-app1.nrsc.gov.in/pdmc/",
+    summary: "Micro-irrigation support for efficient farm-water use through drip, sprinkler, and related water-management systems.",
+    benefit: "State-implemented financial assistance for approved micro-irrigation components; rates and application windows vary by state.",
+    check: (p) => hasLand(p) && Boolean(p.irrigation),
+    reason: "Your land and irrigation details make this worth checking with your State Agriculture or Horticulture Department."
+  },
+  {
+    title: "Mission for Integrated Development of Horticulture",
+    link: "https://midh.gov.in/",
+    summary: "Support for fruits, vegetables, spices, flowers, plantation crops, nurseries, protected cultivation, and post-harvest management.",
+    benefit: "Assistance is delivered through state horticulture missions for approved activities, costs, and beneficiary categories.",
+    check: (p) => isHorticultureCrop(p),
+    reason: "Your registered crop appears horticulture-related. Check the official portal and your State Horticulture Department."
+  },
+  {
+    title: "National Mission on Natural Farming",
+    link: "https://www.india.gov.in/category/agriculture-rural-environment/subcategory/agriculture-ecosystem/details/website-of-national-mission-on-natural-farming",
+    summary: "A national mission supporting chemical-free, livestock-integrated, location-specific natural farming practices and farmer training.",
+    benefit: "Capacity building, local support systems, demonstrations, and handholding through state-led implementation.",
+    check: (p) => hasLand(p) && (/organic|compost|natural|bio/i.test(JSON.stringify(p)) || Boolean(p.primaryCrop)),
+    reason: "Your crop and land profile can be used to ask the local agriculture department about current natural-farming enrollment."
+  },
+  {
+    title: "RKVY Soil Health and Fertility - Soil Health Card",
+    link: "https://soilhealth.dac.gov.in/",
+    summary: "Soil testing and soil-health records covering key nutrient indicators with crop-wise fertilizer recommendations.",
+    benefit: "A soil health report and nutrient guidance through the official programme and participating soil-testing facilities.",
+    check: (p) => hasLand(p) || Boolean(p.soilType),
+    reason: "Your land or soil profile makes a laboratory-backed Soil Health Card relevant."
+  },
+  {
+    title: "e-NAM Farmer Market Access",
+    link: "https://enam.gov.in/web/",
+    summary: "The national electronic agriculture market connects participating mandis for price discovery and online agricultural trade.",
+    benefit: "Market information, transparent bidding, and access to participating e-NAM mandis after required farmer registration.",
+    check: (p) => Boolean(p.primaryCrop || p.harvest),
+    reason: "Your crop or harvest information makes the official e-NAM market portal useful before selling produce."
   }
 ];
 
@@ -163,8 +131,12 @@ function hasLand(p) {
 }
 
 function isLargeEnough(p, acres) {
+  return landAcres(p) >= acres;
+}
+
+function landAcres(p) {
   const match = String(p.landSize || "").match(/[\d.]+/);
-  return match ? Number(match[0]) >= acres : false;
+  return match ? Number(match[0]) : 0;
 }
 
 function hasIrrigation(p) {
@@ -302,18 +274,18 @@ function renderSchemes() {
     return `
       <article class="scheme-card ${eligible ? "eligible" : "not-eligible"} speakable">
         <div>
-          <span class="scheme-status">${uiText(eligible ? "Eligible match" : "Not matched yet")}</span>
+          <span class="scheme-status">${eligible ? "Potential match" : "Check eligibility"}</span>
           <h3>${uiText(scheme.title)}</h3>
           <p>${uiText(scheme.summary)}</p>
-          <p><b>${uiText("Estimated benefit:")}</b> ${uiText(scheme.benefit)}</p>
+          <p><b>${uiText("Scheme support:")}</b> ${uiText(scheme.benefit)}</p>
           <small>${uiText(scheme.reason)}</small>
         </div>
-        <a class="btn ${eligible ? "btn-primary" : "btn-disabled"}" ${eligible ? `href="${scheme.link}" target="_blank" rel="noopener"` : 'aria-disabled="true"'}>${uiText(eligible ? "Apply" : "Not Eligible")}</a>
+        <a class="btn ${eligible ? "btn-primary" : "btn-ghost"}" href="${scheme.link}" target="_blank" rel="noopener noreferrer">Official portal</a>
       </article>
     `;
   }).join("");
 
-  schemeMatcher.innerHTML = `<div class="scheme-summary"><strong>${eligibleCount}</strong><span>${uiText("eligible matches from your registration profile")}</span></div><div class="scheme-grid">${rows}</div>`;
+  schemeMatcher.innerHTML = `<div class="scheme-summary"><strong>${eligibleCount}</strong><span>potential matches from your profile <small>Official links reviewed August 2026</small></span></div><div class="scheme-grid">${rows}</div>`;
   renderSchemeDraftOptions();
 }
 
