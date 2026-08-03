@@ -2168,3 +2168,451 @@ textarea {
     padding-inline: 6px;
   }
 }
+
+/* Plain white-and-green interface */
+:root {
+  --deep-green: #2f6b45;
+  --fresh-green: #2f6b45;
+  --leaf: #2f6b45;
+  --light-green: #eef4ef;
+  --cream: #f6f8f6;
+  --text: #202722;
+  --muted: #667069;
+  --border: #d9e0da;
+  --shadow: none;
+  --soft-shadow: none;
+}
+
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+html,
+body,
+.page-shell,
+.dashboard-page {
+  background: #f6f8f6 !important;
+  color: var(--text);
+}
+
+.ambient,
+.scan-ring,
+.floating-stat,
+.dashboard-overlay {
+  display: none !important;
+}
+
+.site-header,
+.dashboard-nav {
+  background: #fff !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.navbar,
+.dashboard-nav-inner {
+  min-height: 60px;
+}
+
+.brand {
+  color: var(--deep-green) !important;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.site-header .brand-mark,
+.dashboard-nav .brand-mark,
+.dashboard-nav-links svg,
+.dashboard-logout svg {
+  display: none !important;
+}
+
+.nav-links a,
+.dashboard-nav-links a {
+  color: #4e5851;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.nav-links a:hover,
+.dashboard-nav-links a:hover,
+.dashboard-nav-links a.active {
+  color: var(--deep-green) !important;
+  background: transparent !important;
+  border-bottom-color: var(--deep-green) !important;
+  transform: none !important;
+}
+
+.nav-links .btn-primary {
+  color: #fff !important;
+  background: var(--deep-green) !important;
+  border: 1px solid var(--deep-green) !important;
+  border-radius: 4px !important;
+}
+
+.hero,
+.section,
+.login-section,
+.register-section,
+.dashboard-main {
+  position: relative;
+}
+
+.hero h1,
+.section-title h2,
+.login-form h1,
+.register-form h1,
+.dashboard-hero h1,
+.panel-copy h2,
+.crop-health-panel h2 {
+  color: #1d2920 !important;
+  letter-spacing: -0.025em;
+}
+
+.hero h1 .accent,
+.accent {
+  color: var(--deep-green) !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.eyebrow,
+.section-kicker,
+.small-badge,
+.status-pill,
+.result-status,
+.scheme-status {
+  color: var(--deep-green) !important;
+  background: var(--light-green) !important;
+  border: 1px solid #d3dfd5 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.eyebrow svg,
+.section-kicker svg,
+.feature-card > svg,
+.analytics-card > svg,
+.trust-badges svg {
+  display: none !important;
+}
+
+.photo-card,
+.login-card,
+.register-shell,
+.login-form,
+.login-access,
+.register-form,
+.dashboard-hero,
+.dashboard-panel,
+.crop-health-panel,
+.dashboard-card,
+.feature-card,
+.step-card,
+.why-panel,
+.proof-card,
+.analytics-card,
+.result-card,
+.scheme-card,
+.diagnosis-row,
+.crop-action-card,
+.crop-diagnosis-hero,
+.diagnosis-evidence article,
+.crop-treatment-card,
+.outlook-card,
+.forecast-day,
+.trust,
+.cta-banner,
+.hero-metrics > div,
+.login-benefit,
+.register-benefit,
+.form-section,
+.scheme-summary,
+.chat-message,
+.forecast-summary-metrics span,
+.outlook-metrics > div {
+  color: var(--text) !important;
+  background: #fff !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.login-card > div:first-child,
+.register-steps {
+  color: var(--text) !important;
+  background: #fff !important;
+  background-image: none !important;
+  border-color: var(--border) !important;
+}
+
+.access-badges span,
+.register-steps button,
+.register-steps button.active,
+.check-row {
+  color: var(--text) !important;
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.register-steps button.active {
+  color: var(--deep-green) !important;
+  border-color: var(--deep-green) !important;
+}
+
+.register-steps button span,
+.register-steps button.active span {
+  color: var(--deep-green) !important;
+  background: var(--light-green) !important;
+  border-radius: 3px !important;
+}
+
+.dashboard-hero p,
+.dashboard-panel p,
+.crop-health-panel p,
+.dashboard-card p,
+.feature-card p,
+.step-card p,
+.proof-card p,
+.login-card p,
+.register-shell p {
+  color: var(--muted) !important;
+}
+
+.photo-card::before,
+.photo-card::after,
+.dashboard-hero::before,
+.dashboard-hero::after,
+.dashboard-panel::before,
+.dashboard-panel::after,
+.feature-card::before,
+.feature-card::after,
+.cta-banner::before,
+.cta-banner::after {
+  display: none !important;
+}
+
+.feature-card:hover,
+.step-card:hover,
+.proof-card:hover,
+.scheme-card:hover,
+.analytics-card:hover,
+.crop-action-card:hover,
+.forecast-day:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.photo-card {
+  overflow: hidden;
+}
+
+.photo-card img {
+  display: block;
+  filter: none !important;
+}
+
+.hero-metrics,
+.features-grid,
+.steps-grid,
+.proof-grid,
+.analytics-grid {
+  gap: 12px;
+}
+
+.hero-metrics > div,
+.analytics-card {
+  padding: 16px;
+}
+
+.feature-card,
+.step-card,
+.proof-card,
+.dashboard-panel,
+.crop-health-panel,
+.dashboard-card,
+.scheme-card,
+.result-card {
+  padding: 20px;
+}
+
+.btn,
+button,
+.dashboard-logout {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+.btn-primary,
+.btn-solid,
+.btn:not(.btn-secondary):not(.btn-outline),
+button[type="submit"] {
+  color: #fff;
+  background: var(--deep-green) !important;
+  background-image: none !important;
+  border: 1px solid var(--deep-green) !important;
+}
+
+.btn-secondary,
+.btn-outline,
+.btn-outline-white,
+.dashboard-logout,
+.nav-toggle {
+  color: var(--deep-green) !important;
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn:hover,
+button:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn:disabled,
+button:disabled {
+  color: #7c857f !important;
+  background: #e7ebe8 !important;
+  border-color: #d6ddd7 !important;
+  opacity: 1;
+}
+
+input,
+select,
+textarea,
+.upload-box,
+.form-control,
+.chat-input-wrap {
+  color: var(--text) !important;
+  background: #fff !important;
+  border: 1px solid #cfd7d1 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--deep-green) !important;
+  box-shadow: 0 0 0 1px var(--deep-green) !important;
+}
+
+.cta-banner {
+  color: var(--text) !important;
+}
+
+.cta-banner h2,
+.cta-banner p {
+  color: var(--text) !important;
+}
+
+.footer,
+.site-footer,
+.dashboard-footer {
+  color: #566159 !important;
+  background: #fff !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.footer-main .brand-mark {
+  background: var(--light-green) !important;
+  border: 1px solid #d3dfd5 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.voice-control,
+.mute-toggle,
+.floating-audio-button {
+  color: var(--deep-green) !important;
+  background: #fff !important;
+  background-image: none !important;
+  border: 1px solid var(--deep-green) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.mini-chart span,
+.bar-fill,
+.chart-bar,
+.forecast-bar {
+  background: var(--deep-green) !important;
+  background-image: none !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 980px) {
+  .dashboard-nav .brand > span:last-child,
+  .dashboard-logout span {
+    display: inline;
+  }
+
+  .dashboard-logout {
+    width: auto;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .nav-links {
+    background: #fff !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-nav-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .dashboard-nav .brand > span:last-child {
+    display: inline;
+    font-size: 0.92rem;
+  }
+
+  .dashboard-nav-links a {
+    width: auto;
+    justify-content: center;
+    padding: 9px 8px;
+  }
+
+  .dashboard-nav-links a span {
+    display: inline;
+  }
+
+  .dashboard-logout {
+    width: auto;
+    padding: 8px;
+    font-size: 0.72rem;
+  }
+
+  .dashboard-hero,
+  .dashboard-panel,
+  .crop-health-panel,
+  .dashboard-card {
+    border-radius: 4px !important;
+  }
+}

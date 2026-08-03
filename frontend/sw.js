@@ -1,5 +1,5 @@
-const CACHE_NAME = "krishigyaan-shell-v10";
-const RUNTIME_CACHE = "krishigyaan-runtime-v10";
+const CACHE_NAME = "krishigyaan-shell-v11";
+const RUNTIME_CACHE = "krishigyaan-runtime-v11";
 
 const SHELL_ASSETS = [
   "/",
@@ -8,8 +8,7 @@ const SHELL_ASSETS = [
   "/register.html",
   "/dashboard.html",
   "/styles.css",
-  "/refresh.css?v=3",
-  "/refresh.css?v=4",
+  "/refresh.css?v=5",
   "/shared.js",
   "/shared.js?v=2",
   "/locales.js",
