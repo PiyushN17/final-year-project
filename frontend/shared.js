@@ -67,13 +67,13 @@ const KG_EN = {
   lockedMessage: "Please register and login first. All farming tools open inside the protected dashboard.", registerSuccess: "Registration completed. Please login to open your dashboard.", loginSuccess: "Login successful. Opening your dashboard.", loginMissing: "Please complete registration before login.", locationDetected: "Location detected and language updated.", locationDenied: "Location permission was not granted. You can still choose a language manually."
 };
 
-function pack(overrides) {
+function withEnglishDefaults(overrides) {
   return { ...KG_EN, ...overrides };
 }
 
 const KG_TRANSLATIONS = {
   "en-IN": KG_EN,
-  "hi-IN": pack({
+  "hi-IN": withEnglishDefaults({
     navHome: "होम", navFeatures: "सुविधाएं", navSolutions: "समाधान", navAbout: "परिचय", navContact: "संपर्क", navLogin: "लॉगिन", navStarted: "शुरू करें",
     heroEyebrow: "आधुनिक भारत के लिए भविष्य की खेती", heroTitle: "AI आधारित बुद्धिमत्ता से किसानों को सशक्त बनाना", heroSubtitle: "कृषिज्ञान किसानों को बेहतर फसल निर्णय लेने, सरकारी योजनाएं पाने, फसल रोग पहचानने, मिट्टी स्वास्थ्य समझने और अपनी भाषा में सलाह प्राप्त करने में मदद करता है।",
     getStarted: "शुरू करें", watchDemo: "डेमो देखें", metricServices: "सेवाएं", metricMulti: "बहुभाषी", metricSupport: "सहायता", metricAi: "स्मार्ट AI", metricAdvisory: "सलाह",
@@ -89,42 +89,42 @@ const KG_TRANSLATIONS = {
     dashTitle: "आपका फील्ड इंटेलिजेंस सेंटर", dashSubtitle: "लॉगिन के बाद सभी कृषिज्ञान सेवाएं एक सुरक्षित जगह पर हैं।", weatherTitle: "10 दिन का मौसम और बुवाई सलाह", weatherButton: "मौसम सलाह पाएं", longTermTitle: "30 दिन की फसल वृद्धि दिशा", scanTitle: "AI फसल स्वास्थ्य स्कैनर", schemesTitle: "सहायता योजना समर्थन", chatTitle: "AI चैट सहायक", voiceTitle: "वॉइस और स्थानीय भाषा समर्थन",
     lockedMessage: "कृपया पहले पंजीकरण और लॉगिन करें। सभी कृषि टूल सुरक्षित डैशबोर्ड में खुलेंगे।", registerSuccess: "पंजीकरण पूरा हुआ। अब डैशबोर्ड खोलने के लिए लॉगिन करें।", loginSuccess: "लॉगिन सफल। डैशबोर्ड खुल रहा है।"
   }),
-  "bho-IN": pack({
+  "bho-IN": withEnglishDefaults({
     navHome: "होम", navFeatures: "सुविधा", navSolutions: "समाधान", navAbout: "हमनी के बारे में", navContact: "संपर्क", navLogin: "लॉगिन", navStarted: "शुरू करीं",
     heroEyebrow: "नया जमाना के खेती", heroTitle: "AI के बुद्धि से किसान भाई-बहिन के ताकत देहल", heroSubtitle: "कृषिज्ञान फसल के फैसला, सरकारी योजना, रोग पहचान, माटी स्वास्थ्य आ अपनी बोली में सलाह देवे में मदद करे ला।",
     getStarted: "शुरू करीं", watchDemo: "डेमो देखीं", featureLocked: "लॉगिन जरूरी", loginButton: "डैशबोर्ड में जाईं", weatherButton: "मौसम सलाह लीं", lockedMessage: "पहिले रजिस्टर आ लॉगिन करीं, तब सब सेवा डैशबोर्ड में खुली।"
   }),
-  "gu-IN": pack({
+  "gu-IN": withEnglishDefaults({
     navHome: "હોમ", navFeatures: "સુવિધાઓ", navSolutions: "ઉકેલ", navAbout: "વિશે", navContact: "સંપર્ક", navLogin: "લોગિન", navStarted: "શરૂ કરો",
     heroEyebrow: "આધુનિક ભારત માટે ભવિષ્યની ખેતી", heroTitle: "AI આધારિત બુદ્ધિથી ખેડૂતોને સશક્ત બનાવવું", heroSubtitle: "કૃષિગ્યાન ખેડૂતોને પાકના નિર્ણયો, સરકારી યોજનાઓ, પાક રોગ ઓળખ, જમીન આરોગ્ય અને સ્થાનિક ભાષામાં માર્ગદર્શન આપે છે.",
     getStarted: "શરૂ કરો", watchDemo: "ડેમો જુઓ", featuresTitle: "ખેડૂતની દરેક જરૂરિયાત એક વિશ્વસનીય પ્લેટફોર્મમાં.", featureLocked: "લોગિન જરૂરી", loginTitle: "દરેક સુવિધા ખોલવા માટે લોગિન કરો.", loginButton: "ડેશબોર્ડમાં લોગિન", dashTitle: "તમારું ખેતર બુદ્ધિ કેન્દ્ર", weatherTitle: "10 દિવસનું હવામાન અને વાવણી માર્ગદર્શન", weatherButton: "હવામાન સલાહ મેળવો", ctaTitle: "સ્માર્ટ ખેતીના ભવિષ્યમાં આજે જોડાઓ."
   }),
-  "mr-IN": pack({
+  "mr-IN": withEnglishDefaults({
     navHome: "मुख्यपृष्ठ", navFeatures: "वैशिष्ट्ये", navSolutions: "उपाय", navAbout: "माहिती", navContact: "संपर्क", navLogin: "लॉगिन", navStarted: "सुरू करा",
     heroEyebrow: "आधुनिक भारतासाठी भविष्यातील शेती", heroTitle: "AI आधारित बुद्धिमत्तेने शेतकऱ्यांना सक्षम करणे", heroSubtitle: "कृषिज्ञान शेतकऱ्यांना पिकांचे निर्णय, सरकारी योजना, रोग ओळख, माती आरोग्य आणि स्थानिक भाषेतील मार्गदर्शन देते.",
     getStarted: "सुरू करा", watchDemo: "डेमो पहा", featuresTitle: "शेतकऱ्यांच्या सर्व गरजा एका विश्वासू प्लॅटफॉर्मवर.", featureLocked: "लॉगिन आवश्यक", loginTitle: "सर्व सुविधा उघडण्यासाठी लॉगिन करा.", loginButton: "डॅशबोर्डमध्ये लॉगिन", dashTitle: "तुमचे फील्ड इंटेलिजन्स सेंटर", weatherTitle: "10 दिवसांचे हवामान आणि पेरणी मार्गदर्शन", weatherButton: "हवामान सल्ला मिळवा", ctaTitle: "स्मार्ट शेतीच्या भविष्याशी आजच जोडा."
   }),
-  "kn-IN": pack({
+  "kn-IN": withEnglishDefaults({
     navHome: "ಮುಖಪುಟ", navFeatures: "ವೈಶಿಷ್ಟ್ಯಗಳು", navSolutions: "ಪರಿಹಾರಗಳು", navAbout: "ಬಗ್ಗೆ", navContact: "ಸಂಪರ್ಕ", navLogin: "ಲಾಗಿನ್", navStarted: "ಪ್ರಾರಂಭಿಸಿ",
     heroEyebrow: "ಆಧುನಿಕ ಭಾರತದ ಭವಿಷ್ಯದ ಕೃಷಿ", heroTitle: "AI ಬುದ್ಧಿಮತ್ತೆಯಿಂದ ರೈತರನ್ನು ಶಕ್ತಿಮಂತರಾಗಿಸುವುದು", heroSubtitle: "ಕೃಷಿಜ್ಞಾನ ರೈತರಿಗೆ ಬೆಳೆ ನಿರ್ಧಾರ, ಸರ್ಕಾರಿ ಯೋಜನೆ, ರೋಗ ಪತ್ತೆ, ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಮತ್ತು ಸ್ಥಳೀಯ ಭಾಷೆಯ ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ.",
     getStarted: "ಪ್ರಾರಂಭಿಸಿ", watchDemo: "ಡೆಮೊ ನೋಡಿ", featuresTitle: "ರೈತನ ಎಲ್ಲ ಅಗತ್ಯಗಳು ಒಂದೇ ವಿಶ್ವಾಸಾರ್ಹ ವೇದಿಕೆಯಲ್ಲಿ.", featureLocked: "ಲಾಗಿನ್ ಅಗತ್ಯ", loginTitle: "ಎಲ್ಲಾ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ತೆರೆಯಲು ಲಾಗಿನ್ ಮಾಡಿ.", loginButton: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಲಾಗಿನ್", dashTitle: "ನಿಮ್ಮ ಕ್ಷೇತ್ರ ಬುದ್ಧಿಮತ್ತೆ ಕೇಂದ್ರ", weatherTitle: "10 ದಿನಗಳ ಹವಾಮಾನ ಮತ್ತು ಬಿತ್ತನೆ ಸಲಹೆ", weatherButton: "ಹವಾಮಾನ ಸಲಹೆ ಪಡೆಯಿರಿ", ctaTitle: "ಸ್ಮಾರ್ಟ್ ಕೃಷಿಯ ಭವಿಷ್ಯಕ್ಕೆ ಇಂದು ಸೇರಿ."
   }),
-  "ta-IN": pack({
+  "ta-IN": withEnglishDefaults({
     navHome: "முகப்பு", navFeatures: "அம்சங்கள்", navSolutions: "தீர்வுகள்", navAbout: "பற்றி", navContact: "தொடர்பு", navLogin: "உள்நுழை", navStarted: "தொடங்குங்கள்",
     heroEyebrow: "நவீன இந்தியாவிற்கான எதிர்கால விவசாயம்", heroTitle: "AI அறிவால் விவசாயிகளை வலுப்படுத்துதல்", heroSubtitle: "கிரிஷிக்யான் பயிர் முடிவுகள், அரசு திட்டங்கள், நோய் கண்டறிதல், மண் ஆரோக்கியம் மற்றும் உள்ளூர் மொழி வழிகாட்டுதலை வழங்குகிறது.",
     getStarted: "தொடங்குங்கள்", watchDemo: "டெமோ பார்க்க", featuresTitle: "விவசாயியின் அனைத்து தேவைகளும் ஒரே நம்பகமான தளத்தில்.", featureLocked: "உள்நுழைவு தேவை", loginTitle: "அனைத்து அம்சங்களையும் திறக்க உள்நுழைக.", loginButton: "டாஷ்போர்டில் உள்நுழை", dashTitle: "உங்கள் வயல் அறிவு மையம்", weatherTitle: "10 நாள் வானிலை மற்றும் விதைப்பு வழிகாட்டல்", weatherButton: "வானிலை ஆலோசனை பெற", ctaTitle: "ஸ்மார்ட் விவசாயத்தின் எதிர்காலத்தில் இன்று சேருங்கள்."
   }),
-  "te-IN": pack({
+  "te-IN": withEnglishDefaults({
     navHome: "హోమ్", navFeatures: "ఫీచర్లు", navSolutions: "పరిష్కారాలు", navAbout: "గురించి", navContact: "సంప్రదించండి", navLogin: "లాగిన్", navStarted: "ప్రారంభించండి",
     heroEyebrow: "ఆధునిక భారతానికి భవిష్యత్ వ్యవసాయం", heroTitle: "AI ఆధారిత తెలివితో రైతులను శక్తివంతం చేయడం", heroSubtitle: "కృషిజ్ఞాన్ రైతులకు పంట నిర్ణయాలు, ప్రభుత్వ పథకాలు, పంట వ్యాధి గుర్తింపు, మట్టి ఆరోగ్యం మరియు స్థానిక భాషలో మార్గదర్శనం అందిస్తుంది.",
     getStarted: "ప్రారంభించండి", watchDemo: "డెమో చూడండి", featuresTitle: "రైతుకు కావాల్సిన ప్రతిదీ ఒకే నమ్మకమైన వేదికలో.", featureLocked: "లాగిన్ అవసరం", loginTitle: "అన్ని ఫీచర్లను తెరవడానికి లాగిన్ చేయండి.", loginButton: "డ్యాష్‌బోర్డ్‌కి లాగిన్", dashTitle: "మీ పొలం ఇంటెలిజెన్స్ కేంద్రం", weatherTitle: "10 రోజుల వాతావరణం మరియు విత్తన సూచన", weatherButton: "వాతావరణ సలహా పొందండి", ctaTitle: "స్మార్ట్ వ్యవసాయ భవిష్యత్తులో ఈరోజే చేరండి."
   }),
-  "pa-IN": pack({
+  "pa-IN": withEnglishDefaults({
     navHome: "ਘਰ", navFeatures: "ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ", navSolutions: "ਹੱਲ", navAbout: "ਬਾਰੇ", navContact: "ਸੰਪਰਕ", navLogin: "ਲਾਗਿਨ", navStarted: "ਸ਼ੁਰੂ ਕਰੋ",
     heroEyebrow: "ਆਧੁਨਿਕ ਭਾਰਤ ਲਈ ਭਵਿੱਖੀ ਖੇਤੀ", heroTitle: "AI ਚਲਿਤ ਸਮਝ ਨਾਲ ਕਿਸਾਨਾਂ ਨੂੰ ਸਮਰੱਥ ਬਣਾਉਣਾ", heroSubtitle: "ਕ੍ਰਿਸ਼ਿਗਿਆਨ ਕਿਸਾਨਾਂ ਨੂੰ ਫਸਲ ਫੈਸਲੇ, ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ, ਰੋਗ ਪਛਾਣ, ਮਿੱਟੀ ਸਿਹਤ ਅਤੇ ਸਥਾਨਕ ਭਾਸ਼ਾ ਵਿੱਚ ਸਲਾਹ ਦਿੰਦਾ ਹੈ।",
     getStarted: "ਸ਼ੁਰੂ ਕਰੋ", watchDemo: "ਡੇਮੋ ਵੇਖੋ", featuresTitle: "ਕਿਸਾਨ ਲਈ ਹਰ ਲੋੜ ਇੱਕ ਭਰੋਸੇਯੋਗ ਪਲੇਟਫਾਰਮ ਵਿੱਚ।", featureLocked: "ਲਾਗਿਨ ਲੋੜੀਂਦਾ", loginTitle: "ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਖੋਲ੍ਹਣ ਲਈ ਲਾਗਿਨ ਕਰੋ।", loginButton: "ਡੈਸ਼ਬੋਰਡ ਵਿੱਚ ਲਾਗਿਨ", dashTitle: "ਤੁਹਾਡਾ ਖੇਤ ਇੰਟੈਲੀਜੈਂਸ ਕੇਂਦਰ", weatherTitle: "10 ਦਿਨਾਂ ਦਾ ਮੌਸਮ ਅਤੇ ਬਿਜਾਈ ਸਲਾਹ", weatherButton: "ਮੌਸਮ ਸਲਾਹ ਲਵੋ", ctaTitle: "ਅੱਜ ਹੀ ਸਮਾਰਟ ਖੇਤੀ ਦੇ ਭਵਿੱਖ ਨਾਲ ਜੁੜੋ।"
   }),
-  "har-IN": pack({
+  "har-IN": withEnglishDefaults({
     navHome: "होम", navFeatures: "सुविधा", navSolutions: "हल", navAbout: "बारे में", navContact: "संपर्क", navLogin: "लॉगिन", navStarted: "चालू करो",
     heroEyebrow: "नए जमाने की खेती", heroTitle: "AI की समझ तै किसानां नै मजबूत बनाणा", heroSubtitle: "कृषिज्ञान किसानां नै फसल फैसले, सरकारी योजना, रोग पहचान, मिट्टी सेहत अर अपनी बोली में सलाह देवे सै।",
     getStarted: "चालू करो", watchDemo: "डेमो देखो", featureLocked: "लॉगिन जरूरी", loginButton: "डैशबोर्ड खोलो", weatherButton: "मौसम सलाह लो", lockedMessage: "पहले रजिस्टर और लॉगिन करो, फेर सारे टूल डैशबोर्ड में खुलेंगे।"

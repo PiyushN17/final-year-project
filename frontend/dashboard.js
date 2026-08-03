@@ -906,7 +906,7 @@ function initSpeechToText() {
   });
 }
 
-function fileToBase64(file) {
+function readFileAsDataUrl(file) {
   if (imageDataUrlCache.has(file)) return imageDataUrlCache.get(file);
   const promise = new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -919,7 +919,7 @@ function fileToBase64(file) {
 }
 
 async function cloudReadyImage(file) {
-  const source = await fileToBase64(file);
+  const source = await readFileAsDataUrl(file);
   return new Promise((resolve) => {
     const image = new Image();
     image.onload = () => {
@@ -959,7 +959,7 @@ async function saveImageToCloud(file, kind) {
 
 async function readImageMeta(file) {
   if (!file) return null;
-  const dataUrl = await fileToBase64(file);
+  const dataUrl = await readFileAsDataUrl(file);
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -1200,9 +1200,9 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
     const weeklyBars = weeklyRain.map((value, index) => `<div><span style="--week-height:${Math.max((value / maximumWeeklyRain) * 100, 3).toFixed(1)}%"></span><b>${value.toFixed(0)} mm</b><small>Week ${index + 1}</small></div>`).join("");
     longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Planning trend</span><h3>30-day crop growth direction</h3></div><div class="outlook-metrics"><span><b>${longTermRain.toFixed(0)} mm</b>Total rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>${avgSoil.toFixed(2)}</b>Soil moisture</span></div><div class="weekly-rain"><div class="weekly-rain-title"><strong>Weekly rainfall direction</strong><small>Forecast, not a guarantee</small></div><div class="weekly-bars">${weeklyBars}</div></div><p class="growth-note">Keep drainage and irrigation flexible. For short-duration vegetables, stagger sowing so one weather event does not affect the whole crop.</p>`;
   } else {
-    const rain16 = days.reduce((sum, day) => sum + day.rain, 0);
+    const forecastRainTotal = days.reduce((sum, day) => sum + day.rain, 0);
     const avgTemp = days.reduce((sum, day) => sum + ((day.min + day.max) / 2), 0) / Math.max(days.length, 1);
-    longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Short-term fallback</span><h3>Crop growth direction</h3></div><div class="outlook-metrics"><span><b>${rain16.toFixed(1)} mm</b>10-day rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>Weekly</b>Re-check</span></div><p class="growth-note">The 30-day source is unavailable, so this direction uses the current 10-day forecast. Re-check before sowing a long-duration crop.</p>`;
+    longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Short-term fallback</span><h3>Crop growth direction</h3></div><div class="outlook-metrics"><span><b>${forecastRainTotal.toFixed(1)} mm</b>10-day rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>Weekly</b>Re-check</span></div><p class="growth-note">The 30-day source is unavailable, so this direction uses the current 10-day forecast. Re-check before sowing a long-duration crop.</p>`;
   }
   const soilStatus = document.getElementById("soilStatus");
   if (soilStatus) soilStatus.textContent = days.some((day) => day.rain > 10) ? "Moisture risk is high. Keep drainage clear and avoid over-irrigation." : "Moisture appears manageable. Irrigate based on soil feel and crop stage.";
@@ -1405,8 +1405,8 @@ detectBtn?.addEventListener("click", async () => {
     const mode = diseaseMode();
     cropResult.innerHTML = `<span class="empty-state">Converting image to base64 and sending it to ${mode === "plant" ? "Plant.id" : "crop health"} AI...</span>`;
     await saveImageToCloud(file, mode).catch((error) => console.warn("Cloud image save failed:", error.message));
-    const base64 = await fileToBase64(file);
-    const data = mode === "plant" ? await detectPlantDisease(base64) : await detectDisease(base64);
+    const imageDataUrl = await readFileAsDataUrl(file);
+    const data = mode === "plant" ? await detectPlantDisease(imageDataUrl) : await detectDisease(imageDataUrl);
     renderCropResult(data, mode);
     if (hasActionableDisease(data) && document.getElementById("cropTreatmentPlan")) {
       await renderDiseaseTreatment(data);
