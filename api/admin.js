@@ -130,9 +130,10 @@ async function updateFarmer(body) {
 }
 
 function cloudinaryConfig() {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  const cloudinaryUrl = String(process.env.CLOUDINARY_URL || "").match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || cloudinaryUrl?.[3];
+  const apiKey = process.env.CLOUDINARY_API_KEY || cloudinaryUrl?.[1];
+  const apiSecret = process.env.CLOUDINARY_API_SECRET || cloudinaryUrl?.[2];
   return cloudName && apiKey && apiSecret ? { cloudName, apiKey, apiSecret } : null;
 }
 

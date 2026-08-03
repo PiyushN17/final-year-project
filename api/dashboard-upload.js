@@ -14,12 +14,15 @@ async function resolveFarmer(body = {}) {
 }
 
 function cloudinaryConfig() {
+  const cloudinaryUrl = String(process.env.CLOUDINARY_URL || "").match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
   const config = {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-    apiSecret: process.env.CLOUDINARY_API_SECRET
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || cloudinaryUrl?.[3],
+    apiKey: process.env.CLOUDINARY_API_KEY || cloudinaryUrl?.[1],
+    apiSecret: process.env.CLOUDINARY_API_SECRET || cloudinaryUrl?.[2]
   };
-  if (!config.cloudName || !config.apiKey || !config.apiSecret) throw new Error("Cloud image storage is not configured.");
+  if (!config.cloudName || !config.apiKey || !config.apiSecret) {
+    throw new Error("Cloud image storage is not configured. Add CLOUDINARY_URL or all three CLOUDINARY_* variables in Vercel.");
+  }
   return config;
 }
 

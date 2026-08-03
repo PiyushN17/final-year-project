@@ -72,8 +72,8 @@ const editableProfileFields = [
 ];
 
 function renderProfile(profile = {}) {
-  return `<div class="admin-profile-grid">${editableProfileFields.map(([key, label]) => `<label><span>${escapeAdminHtml(label)}</span><input data-profile-field="${key}" value="${escapeAdminHtml(profile[key] ?? "")}" /></label>`).join("")}
-    <label><span>New password (optional)</span><input data-profile-password type="password" minlength="8" maxlength="32" autocomplete="new-password" /></label>
+  return `<div class="admin-profile-grid">${editableProfileFields.map(([key, label]) => `<label><span>${escapeAdminHtml(label)}</span><strong>${escapeAdminHtml(profile[key] || "Not provided")}</strong><input data-profile-field="${key}" value="${escapeAdminHtml(profile[key] ?? "")}" /></label>`).join("")}
+    <label class="admin-password-field"><span>New password (optional)</span><input data-profile-password type="password" minlength="8" maxlength="32" autocomplete="new-password" /></label>
     <div class="admin-readonly"><span>Registered</span><strong>${escapeAdminHtml(formatDate(profile.createdAt))}</strong></div>
     <div class="admin-readonly"><span>Last login</span><strong>${escapeAdminHtml(formatDate(profile.lastLoginAt))}</strong></div></div>`;
 }
@@ -82,7 +82,7 @@ function renderUploads(uploads = []) {
   if (!uploads.length) return `<p class="admin-empty-row">No crop or soil images have been uploaded.</p>`;
   return `<div class="admin-upload-grid">${uploads.map((upload) => {
     const safeUrl = /^https:\/\/res\.cloudinary\.com\//i.test(upload.secureUrl || "") ? upload.secureUrl : "";
-    return `<article class="admin-upload-card" data-upload-public-id="${escapeAdminHtml(upload.publicId || "")}">${safeUrl ? `<img src="${escapeAdminHtml(safeUrl)}" alt="${escapeAdminHtml(upload.kind || "farm")} upload" loading="lazy" />` : ""}<div><label>Name<input data-upload-name value="${escapeAdminHtml(upload.originalName || "Image")}" /></label><label>Type<select data-upload-kind><option value="crop"${upload.kind === "crop" ? " selected" : ""}>Crop</option><option value="plant"${upload.kind === "plant" ? " selected" : ""}>Plant</option><option value="soil"${upload.kind === "soil" ? " selected" : ""}>Soil</option></select></label><span>${escapeAdminHtml(formatDate(upload.createdAt))}</span>${safeUrl ? `<a href="${escapeAdminHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">Open Cloudinary image</a>` : ""}<div class="admin-inline-actions"><button type="button" data-save-upload>Save</button><button class="danger" type="button" data-delete-upload>Delete</button></div></div></article>`;
+    return `<article class="admin-upload-card" data-upload-public-id="${escapeAdminHtml(upload.publicId || "")}">${safeUrl ? `<img src="${escapeAdminHtml(safeUrl)}" alt="${escapeAdminHtml(upload.kind || "farm")} upload" loading="lazy" />` : ""}<div><strong>${escapeAdminHtml(upload.originalName || "Image")}</strong><span>${escapeAdminHtml(upload.kind || "Image")}</span><span>${escapeAdminHtml(formatDate(upload.createdAt))}</span>${safeUrl ? `<a href="${escapeAdminHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">Open Cloudinary image</a>` : ""}<button type="button" data-edit-upload>Edit</button><div class="admin-upload-editor"><label>Name<input data-upload-name value="${escapeAdminHtml(upload.originalName || "Image")}" /></label><label>Type<select data-upload-kind><option value="crop"${upload.kind === "crop" ? " selected" : ""}>Crop</option><option value="plant"${upload.kind === "plant" ? " selected" : ""}>Plant</option><option value="soil"${upload.kind === "soil" ? " selected" : ""}>Soil</option></select></label><div class="admin-inline-actions"><button type="button" data-save-upload>Save</button><button class="danger" type="button" data-delete-upload>Delete</button></div></div></div></article>`;
   }).join("")}</div>`;
 }
 
@@ -92,12 +92,12 @@ function renderFarmerDetail(data) {
   detail.dataset.farmerId = data.profile.id;
   detail.innerHTML = `<div class="admin-detail-head"><div><p>Farmer data center</p><h2>${escapeAdminHtml(data.profile.fullName || "Farmer")}</h2><span>Last dashboard update: ${escapeAdminHtml(formatDate(data.analysis?.updatedAt))}</span></div><button class="danger" type="button" data-delete-farmer>Delete farmer</button></div>
     <p class="admin-action-note" id="adminActionNote" role="status"></p>
-    <section class="admin-data-section"><div class="admin-section-heading"><h3>Registered profile</h3><button type="button" data-save-profile>Save profile</button></div>${renderProfile(data.profile)}</section>
+    <section class="admin-data-section" id="adminProfileSection"><div class="admin-section-heading"><h3>Registered profile</h3><div><button type="button" data-edit-profile>Edit</button><button type="button" data-save-profile hidden>Save</button><button type="button" data-cancel-profile hidden>Cancel</button></div></div>${renderProfile(data.profile)}</section>
     <section class="admin-data-section"><h3>Uploaded images</h3>${renderUploads(data.uploads)}</section>
     ${adminSections.map((section, index) => {
       const content = section.keys.map((key) => sections[key] || "").filter(Boolean).join("<hr>");
-      return `<section class="admin-data-section"><h3>${index + 1}. ${escapeAdminHtml(section.title)}</h3><div class="admin-saved-result">${content ? sanitizeSavedHtml(content) : `<p class="admin-empty-row">No saved result yet.</p>`}</div>${section.keys.map((key) => `<label class="admin-analysis-editor"><span>Edit ${escapeAdminHtml(key)}</span><textarea data-analysis-field="${key}">${escapeAdminHtml(sections[key] || "")}</textarea></label>`).join("")}</section>`;
-    }).join("")}<div class="admin-bottom-actions"><button type="button" data-save-analysis>Save dashboard data</button><button class="danger" type="button" data-delete-analysis>Delete saved dashboard data</button></div>`;
+      return `<section class="admin-data-section"><div class="admin-section-heading"><h3>${index + 1}. ${escapeAdminHtml(section.title)}</h3><button type="button" data-edit-analysis>Edit</button></div><div class="admin-saved-result">${content ? sanitizeSavedHtml(content) : `<p class="admin-empty-row">No saved result yet.</p>`}</div><div class="admin-analysis-editors">${section.keys.map((key) => `<label class="admin-analysis-editor"><span>Edit ${escapeAdminHtml(key)}</span><textarea data-analysis-field="${key}">${escapeAdminHtml(sections[key] || "")}</textarea></label>`).join("")}<button type="button" data-save-analysis>Save section</button></div></section>`;
+    }).join("")}<div class="admin-bottom-actions"><button class="danger" type="button" data-delete-analysis>Delete saved dashboard data</button></div>`;
 }
 
 if (adminPage === "admin-login") {
@@ -172,6 +172,16 @@ if (adminPage === "admin-dashboard") {
     const button = event.target.closest("button");
     if (!button || !activeFarmerId) return;
     try {
+      if (button.matches("[data-edit-profile]")) {
+        const section = document.getElementById("adminProfileSection");
+        section.classList.add("editing");
+        button.hidden = true;
+        section.querySelector("[data-save-profile]").hidden = false;
+        section.querySelector("[data-cancel-profile]").hidden = false;
+      }
+      if (button.matches("[data-cancel-profile]")) {
+        await openFarmer(activeFarmerId, document.querySelector(`[data-farmer-id="${CSS.escape(activeFarmerId)}"]`));
+      }
       if (button.matches("[data-save-profile]")) {
         const profile = Object.fromEntries([...document.querySelectorAll("[data-profile-field]")].map((input) => [input.dataset.profileField, input.value]));
         const password = document.querySelector("[data-profile-password]")?.value || "";
@@ -179,6 +189,8 @@ if (adminPage === "admin-dashboard") {
         showActionNote("Profile saved.");
         await loadUsers(activeFarmerId);
       }
+      if (button.matches("[data-edit-analysis]")) button.closest(".admin-data-section").classList.toggle("editing");
+      if (button.matches("[data-edit-upload]")) button.closest(".admin-upload-card").classList.toggle("editing");
       if (button.matches("[data-delete-farmer]") && confirm("Delete this farmer, all saved analysis, and all uploaded images? This cannot be undone.")) {
         const result = await adminRequest({ action: "delete-farmer", farmerId: activeFarmerId });
         activeFarmerId = "";
@@ -189,6 +201,7 @@ if (adminPage === "admin-dashboard") {
         const sections = Object.fromEntries([...document.querySelectorAll("[data-analysis-field]")].map((input) => [input.dataset.analysisField, input.value]));
         await adminRequest({ action: "update-analysis", farmerId: activeFarmerId, sections });
         showActionNote("Dashboard data saved.");
+        button.closest(".admin-data-section")?.classList.remove("editing");
       }
       if (button.matches("[data-delete-analysis]") && confirm("Delete all saved dashboard analysis for this farmer?")) {
         await adminRequest({ action: "delete-analysis", farmerId: activeFarmerId });
@@ -198,6 +211,7 @@ if (adminPage === "admin-dashboard") {
       if (card && button.matches("[data-save-upload]")) {
         await adminRequest({ action: "update-upload", farmerId: activeFarmerId, publicId: card.dataset.uploadPublicId, originalName: card.querySelector("[data-upload-name]").value, kind: card.querySelector("[data-upload-kind]").value });
         showActionNote("Image details saved.");
+        card.classList.remove("editing");
       }
       if (card && button.matches("[data-delete-upload]") && confirm("Delete this image from Cloudinary and the dashboard record?")) {
         await adminRequest({ action: "delete-upload", farmerId: activeFarmerId, publicId: card.dataset.uploadPublicId });

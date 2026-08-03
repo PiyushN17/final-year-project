@@ -2672,6 +2672,30 @@ body[data-page="admin-dashboard"] {
 }
 
 .admin-profile-grid input,
+.admin-profile-grid > .admin-password-field,
+.admin-upload-card .admin-upload-editor,
+.admin-analysis-editors {
+  display: none;
+}
+
+#adminProfileSection.editing .admin-profile-grid input,
+#adminProfileSection.editing .admin-profile-grid > .admin-password-field,
+.admin-upload-card.editing .admin-upload-editor,
+.admin-data-section.editing .admin-analysis-editors {
+  display: grid;
+}
+
+#adminProfileSection.editing .admin-profile-grid > label > strong {
+  display: none;
+}
+
+.admin-upload-editor,
+.admin-analysis-editors {
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-profile-grid input,
 .admin-upload-card input,
 .admin-upload-card select,
 .admin-create-form input {
