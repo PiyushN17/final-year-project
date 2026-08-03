@@ -76,14 +76,14 @@ function applyDashboardAnalysis(analysis) {
     const element = document.getElementById(id);
     if (element && typeof html === "string" && html.trim()) element.innerHTML = html;
   }
-  const restoredWeatherAdvice = weatherResult?.querySelector("#krishiBabaWeatherAdvice");
-  if (restoredWeatherAdvice && longTermResult) {
-    longTermResult.querySelector("#krishiBabaWeatherAdvice")?.remove();
-    longTermResult.appendChild(restoredWeatherAdvice);
-  }
+  const savedWeatherGuidance = [
+    weatherResult?.querySelector("#krishiBabaWeatherAdvice"),
+    longTermResult?.querySelector("#krishiBabaWeatherAdvice")
+  ].filter(Boolean);
+  savedWeatherGuidance.forEach((element) => element.remove());
   if (analysis.signals && typeof analysis.signals === "object") Object.assign(dashboardSignals, analysis.signals);
   updateDashboardMetrics();
-  return true;
+  return savedWeatherGuidance.length > 0;
 }
 
 function readLocalDashboardAnalysis() {
@@ -166,7 +166,10 @@ async function restoreDashboardAnalysis() {
   const localAnalysis = readLocalDashboardAnalysis();
   const legacyAnalysis = localAnalysis ? null : readLegacyDashboardAnalysis();
   const immediateAnalysis = localAnalysis || legacyAnalysis;
-  if (immediateAnalysis) applyDashboardAnalysis(immediateAnalysis);
+  if (immediateAnalysis) {
+    const removedDuplicateGuidance = applyDashboardAnalysis(immediateAnalysis);
+    if (removedDuplicateGuidance) cacheDashboardAnalysis(captureDashboardAnalysis());
+  }
   try {
     const response = await fetch(kgApiUrl("/api/dashboard-analysis"), {
       method: "POST",
@@ -176,12 +179,14 @@ async function restoreDashboardAnalysis() {
     if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Saved dashboard analysis could not be loaded.");
     const { analysis } = await response.json();
     if (analysis) {
-      applyDashboardAnalysis(analysis);
-      cacheDashboardAnalysis(analysis);
+      const removedDuplicateGuidance = applyDashboardAnalysis(analysis);
+      const normalizedAnalysis = removedDuplicateGuidance ? captureDashboardAnalysis() : analysis;
+      cacheDashboardAnalysis(normalizedAnalysis);
+      if (removedDuplicateGuidance) await persistDashboardAnalysis(normalizedAnalysis);
       return;
     }
     if (immediateAnalysis) {
-      await persistDashboardAnalysis(immediateAnalysis);
+      await persistDashboardAnalysis(captureDashboardAnalysis());
     }
   } catch (error) {
     console.warn("Saved dashboard analysis load failed:", error);
@@ -1040,8 +1045,6 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
     const avgTemp = days.reduce((sum, day) => sum + ((day.min + day.max) / 2), 0) / Math.max(days.length, 1);
     longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Short-term fallback</span><h3>Crop growth direction</h3></div><div class="outlook-metrics"><span><b>${rain16.toFixed(1)} mm</b>10-day rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>Weekly</b>Re-check</span></div><p class="growth-note">The 30-day source is unavailable, so this direction uses the current 10-day forecast. Re-check before sowing a long-duration crop.</p>`;
   }
-  longTermResult.insertAdjacentHTML("beforeend", `<div class="weather-advice" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing a short field recommendation...</p></div>`);
-
   const soilStatus = document.getElementById("soilStatus");
   if (soilStatus) soilStatus.textContent = days.some((day) => day.rain > 10) ? "Moisture risk is high. Keep drainage clear and avoid over-irrigation." : "Moisture appears manageable. Irrigate based on soil feel and crop stage.";
   try {
@@ -1051,11 +1054,9 @@ Prioritize immediate actions under four short labels: Field work, Water, Disease
 Location: ${place}
 Farmer profile: ${JSON.stringify(profile)}
 Weather days: ${JSON.stringify(days)}`);
-    document.getElementById("krishiBabaWeatherAdvice").innerHTML = `<strong>KrishiBaba farmer guidance</strong><p>${renderAiText(aiAdvice)}</p>`;
     document.getElementById("krishiBabaCropAdvice").innerHTML = `<strong>KrishiBaba recommendation</strong><p>${renderAiText(aiAdvice)}</p>`;
     kgSpeak(aiAdvice, kgActiveLanguage);
   } catch (error) {
-    document.getElementById("krishiBabaWeatherAdvice").innerHTML = `<strong>KrishiBaba farmer guidance</strong><p>${error.message}</p><p>Use the local advisory shown above until KrishiBaba is available.</p>`;
     document.getElementById("krishiBabaCropAdvice").innerHTML = `<strong>Local recommendation</strong><p>Use the forecast-based action list above and check the field before irrigation, spraying, sowing, or harvest work.</p>`;
     kgSpeak(advice.join(" "), kgActiveLanguage);
   }
