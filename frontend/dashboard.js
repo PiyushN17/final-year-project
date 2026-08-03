@@ -48,11 +48,36 @@ const dashboardSignals = {
   soilScore: null
 };
 
-const SCHEME_DRAFT_LANGUAGE_CODES = ["hi-IN", "en-IN", "gu-IN", "mr-IN", "kn-IN", "ta-IN", "te-IN"];
+const SCHEME_DRAFT_LANGUAGE_CODES = ["hi-IN", "en-IN", "kn-IN", "ta-IN", "te-IN"];
 const SCHEME_DRAFT_LANGUAGE_RULES = {
-  "gu-IN": "ગુજરાતી લિપિનો જ ઉપયોગ કરો. માળખાકીય શબ્દો માટે તારીખ, પ્રતિ, વિષય, માનનીય મહોદય/મહોદયા, અરજદારની વિગતો, જરૂરી દસ્તાવેજો, ઘોષણા, સ્થળ અને હસ્તાક્ષર જેવા ગુજરાતી શબ્દો વાપરો.",
-  "mr-IN": "फक्त मराठी देवनागरी लिपी वापरा. रचनात्मक मजकुरासाठी दिनांक, प्रति, विषय, माननीय महोदय/महोदया, अर्जदाराचा तपशील, आवश्यक कागदपत्रे, घोषणा, ठिकाण आणि स्वाक्षरी हे मराठी शब्द वापरा."
+  "hi-IN": "केवल हिंदी देवनागरी लिपि का उपयोग करें। क्रम और शीर्षक पूरी तरह हिंदी में हों: दिनांक, सेवा में, संबंधित अधिकारी या प्रबंधक, पता, विषय, माननीय महोदय या महोदया, किसान का विवरण, आवश्यक दस्तावेज, घोषणा, भवदीय, स्थान, हस्ताक्षर और संलग्नक।",
+  "kn-IN": "ಕನ್ನಡ ಲಿಪಿಯನ್ನು ಮಾತ್ರ ಬಳಸಿ. ಕ್ರಮ ಮತ್ತು ಶೀರ್ಷಿಕೆಗಳು ಸಂಪೂರ್ಣ ಕನ್ನಡದಲ್ಲಿರಲಿ: ದಿನಾಂಕ, ಇವರಿಗೆ, ಸಂಬಂಧಿತ ಅಧಿಕಾರಿ ಅಥವಾ ವ್ಯವಸ್ಥಾಪಕರು, ವಿಳಾಸ, ವಿಷಯ, ಮಾನ್ಯರೇ, ರೈತರ ವಿವರಗಳು, ಅಗತ್ಯ ದಾಖಲೆಗಳು, ಘೋಷಣೆ, ವಂದನೆಗಳೊಂದಿಗೆ, ಸ್ಥಳ, ಸಹಿ ಮತ್ತು ಲಗತ್ತುಗಳು.",
+  "ta-IN": "தமிழ் எழுத்துக்களை மட்டும் பயன்படுத்தவும். வரிசையும் தலைப்புகளும் முழுமையாக தமிழில் இருக்க வேண்டும்: தேதி, பெறுநர், தொடர்புடைய அலுவலர் அல்லது மேலாளர், முகவரி, பொருள், மதிப்பிற்குரிய ஐயா அல்லது அம்மா, விவசாயி விவரங்கள், தேவையான ஆவணங்கள், உறுதிமொழி, இப்படிக்கு, இடம், கையொப்பம் மற்றும் இணைப்புகள்.",
+  "te-IN": "తెలుగు లిపిని మాత్రమే ఉపయోగించండి. క్రమం మరియు శీర్షికలు పూర్తిగా తెలుగులో ఉండాలి: తేదీ, వారికి, సంబంధిత అధికారి లేదా మేనేజర్, చిరునామా, విషయం, గౌరవనీయులైన సర్ లేదా మేడమ్, రైతు వివరాలు, అవసరమైన పత్రాలు, ప్రకటన, విధేయుడిగా, స్థలం, సంతకం మరియు జతపత్రాలు."
 };
+const SCHEME_DRAFT_SCRIPT_PATTERNS = {
+  "hi-IN": /[\u0900-\u097F]/g,
+  "kn-IN": /[\u0C80-\u0CFF]/g,
+  "ta-IN": /[\u0B80-\u0BFF]/g,
+  "te-IN": /[\u0C00-\u0C7F]/g
+};
+const ENGLISH_DRAFT_STRUCTURE = /\b(?:date|to|the officer|manager|relevant department|bank|institution|address|subject|application|respected|sir|madam|farmer details|required documents|declaration|yours faithfully|name|mobile|age|village|district|state|land|crop|place|enclosure|signature)\b/i;
+const HINDI_DRAFT_LABEL_REPLACEMENTS = [
+  [/^Date\s*:/gim, "दिनांक:"],
+  [/^To\s*,?$/gim, "सेवा में,"],
+  [/^The Officer\s*\/\s*Manager\s*,?$/gim, "संबंधित अधिकारी / प्रबंधक,"],
+  [/^Relevant Department\s*\/\s*Bank\s*\/\s*Institution\s*$/gim, "संबंधित विभाग / बैंक / संस्था"],
+  [/^Address\s*:/gim, "पता:"],
+  [/^Subject\s*:/gim, "विषय:"],
+  [/^Respected Sir\s*\/\s*Madam\s*,?$/gim, "माननीय महोदय / महोदया,"],
+  [/^Farmer Details\s*:/gim, "किसान का विवरण:"],
+  [/^Required Documents\s*:/gim, "आवश्यक दस्तावेज:"],
+  [/^Declaration\s*:/gim, "घोषणा:"],
+  [/^Yours faithfully\s*,?$/gim, "भवदीय,"],
+  [/^Place\s*:/gim, "स्थान:"],
+  [/^Enclosures?\s*:/gim, "संलग्नक:"],
+  [/^Signature\s*:/gim, "हस्ताक्षर:"]
+];
 const DASHBOARD_ANALYSIS_SECTION_IDS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
 const DASHBOARD_ANALYSIS_CACHE_KEY = `krishigyaanDashboardAnalysis:${profile.id || profile.mobile || "farmer"}`;
 let dashboardAnalysisSaveTimer = null;
@@ -81,9 +106,19 @@ function applyDashboardAnalysis(analysis) {
     longTermResult?.querySelector("#krishiBabaWeatherAdvice")
   ].filter(Boolean);
   savedWeatherGuidance.forEach((element) => element.remove());
+  const restoredDraft = schemeAssistantResult?.querySelector("#printableApplication");
+  const restoredDraftLanguage = restoredDraft?.dataset.draftLanguage || "";
+  const invalidSavedDraft = Boolean(restoredDraft) && (
+    !SCHEME_DRAFT_LANGUAGE_CODES.includes(restoredDraftLanguage)
+    || !draftMatchesSelectedLanguage(restoredDraft.textContent || "", restoredDraftLanguage)
+  );
+  if (invalidSavedDraft && schemeAssistantResult) {
+    schemeAssistantResult.innerHTML = `<span class="empty-state">Generate a new application draft in one selected language.</span>`;
+    printDraftBtn?.classList.add("hidden");
+  }
   if (analysis.signals && typeof analysis.signals === "object") Object.assign(dashboardSignals, analysis.signals);
   updateDashboardMetrics();
-  return savedWeatherGuidance.length > 0;
+  return savedWeatherGuidance.length > 0 || invalidSavedDraft;
 }
 
 function readLocalDashboardAnalysis() {
@@ -460,7 +495,8 @@ function renderSchemeDraftOptions() {
   if (draftAge) draftAge.value = profile.age || "";
 }
 
-function draftFormatGuide(type) {
+function draftFormatGuide(type, language = "en-IN") {
+  if (language !== "en-IN") return SCHEME_DRAFT_LANGUAGE_RULES[language];
   const guides = {
     "Application letter": [
       "Use this exact structure:",
@@ -517,6 +553,49 @@ function cleanDraftText(text) {
     .replace(/Branch Address/gi, "__________")
     .replace(/City, State, Pin Code/gi, "__________")
     .trim();
+}
+
+function normalizeDraftLabels(text, language) {
+  let normalized = cleanDraftText(text);
+  if (language === "hi-IN") {
+    for (const [pattern, replacement] of HINDI_DRAFT_LABEL_REPLACEMENTS) normalized = normalized.replace(pattern, replacement);
+    normalized = normalized
+      .replace(/\bApplication for\b/gi, "हेतु आवेदन")
+      .replace(/\bPM-Kisan Samman Nidhi\b/gi, "प्रधानमंत्री किसान सम्मान निधि")
+      .replace(/\bAadhaar\b/gi, "आधार")
+      .replace(/\be-KYC\b/gi, "ई-केवाईसी");
+  }
+  return normalized.trim();
+}
+
+function draftMatchesSelectedLanguage(text, language) {
+  if (!text) return false;
+  if (language === "en-IN") return true;
+  if (ENGLISH_DRAFT_STRUCTURE.test(text)) return false;
+  const scriptPattern = SCHEME_DRAFT_SCRIPT_PATTERNS[language];
+  if (!scriptPattern) return false;
+  const nativeLetters = (text.match(scriptPattern) || []).length;
+  const allLetters = (text.match(/\p{L}/gu) || []).length;
+  const withoutOfficialAbbreviations = text.replace(/\b(?:PM[-\s]?KISAN|PM|KISAN|DBT|KYC|e-KYC)\b/gi, "");
+  const leakedLatinWords = withoutOfficialAbbreviations.match(/[A-Za-z]{2,}/g) || [];
+  return nativeLetters >= 80 && nativeLetters / Math.max(allLetters, 1) >= 0.68 && leakedLatinWords.length === 0;
+}
+
+async function enforceDraftLanguage(text, language, languageLabel, type) {
+  let normalized = normalizeDraftLabels(text, language);
+  if (draftMatchesSelectedLanguage(normalized, language)) return normalized;
+  const corrected = await kgAiText(`The draft below failed strict language validation. Rewrite the entire ${type} from the first line through the enclosure list only in ${languageLabel} and its native script.
+Translate every heading, recipient title, field label, salutation, scheme name, paragraph, closing, place, date, signature label, and enclosure label. Do not leave words such as Date, To, Officer, Manager, Address, Subject, Application, Respected, Farmer Details, Required Documents, Declaration, Yours faithfully, Place, Signature, or Enclosure in English.
+${SCHEME_DRAFT_LANGUAGE_RULES[language]}
+Keep numbers and the official abbreviations PM-KISAN, DBT, and KYC only when necessary. Return only the complete corrected document.
+
+Draft to correct:
+${normalized}`, { language, maxTokens: 1400 });
+  normalized = normalizeDraftLabels(corrected, language);
+  if (!draftMatchesSelectedLanguage(normalized, language)) {
+    throw new Error(`${languageLabel} draft validation failed. No mixed-language draft was displayed. Please generate it again.`);
+  }
+  return normalized;
 }
 
 function escapeDashboardHtml(value = "") {
@@ -591,15 +670,15 @@ Use the selected scheme details to decide the correct content, documents, purpos
 Use farmer information wherever available. Put the farmer's actual name, mobile, age, village, district, state, crop, land, bank, PM-KISAN, and other known profile details directly in the relevant fields.
 If any specific field value is missing, write only this blank line: __________
 Never use square brackets, round brackets, curly brackets, angle brackets, placeholder labels like "Current Date", or text like "[Bank Name]".
-Do not ask the user for more data. Do not invent Aadhaar, bank account, address, application number, dates, or land record numbers.
+Do not ask the user for more data. Do not invent Aadhaar, bank account, address, application number, dates, land record numbers, land verification, or e-KYC completion. If only the last four Aadhaar digits are present, label them clearly as the last four digits and never present them as the full Aadhaar number.
 Do not use asterisks or markdown.
 Never end midway. Include the closing, applicant name, mobile number, place, date, signature, and enclosure/document list when suitable.
 Format guide for this draft type:
-${draftFormatGuide(type)}
+${draftFormatGuide(type, draftLanguage)}
 Farmer profile JSON: ${JSON.stringify(updatedProfile)}
 Selected scheme JSON: ${JSON.stringify(scheme)}`, { language: draftLanguage, maxTokens: 1400 });
-    const cleanDraft = cleanDraftText(draft);
-    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication"><pre>${cleanDraft}</pre></div>`;
+    const cleanDraft = await enforceDraftLanguage(draft, draftLanguage, draftLanguageLabel, type);
+    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication" data-draft-language="${draftLanguage}"><pre>${escapeDashboardHtml(cleanDraft)}</pre></div>`;
     saveDashboardSnapshot("scheme-draft", schemeAssistantResult);
     printDraftBtn.classList.remove("hidden");
     if ("speechSynthesis" in window && window.speechSynthesis.paused) window.speechSynthesis.resume();
