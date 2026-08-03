@@ -61,22 +61,42 @@ const SCHEME_DRAFT_SCRIPT_PATTERNS = {
   "ta-IN": /[\u0B80-\u0BFF]/g,
   "te-IN": /[\u0C00-\u0C7F]/g
 };
-const ENGLISH_DRAFT_STRUCTURE = /\b(?:date|to|the officer|manager|relevant department|bank|institution|address|subject|application|respected|sir|madam|farmer details|required documents|declaration|yours faithfully|name|mobile|age|village|district|state|land|crop|place|enclosure|signature)\b/i;
-const HINDI_DRAFT_LABEL_REPLACEMENTS = [
-  [/^Date\s*:/gim, "दिनांक:"],
-  [/^To\s*,?$/gim, "सेवा में,"],
-  [/^The Officer\s*\/\s*Manager\s*,?$/gim, "संबंधित अधिकारी / प्रबंधक,"],
-  [/^Relevant Department\s*\/\s*Bank\s*\/\s*Institution\s*$/gim, "संबंधित विभाग / बैंक / संस्था"],
-  [/^Address\s*:/gim, "पता:"],
-  [/^Subject\s*:/gim, "विषय:"],
-  [/^Respected Sir\s*\/\s*Madam\s*,?$/gim, "माननीय महोदय / महोदया,"],
-  [/^Farmer Details\s*:/gim, "किसान का विवरण:"],
-  [/^Required Documents\s*:/gim, "आवश्यक दस्तावेज:"],
-  [/^Declaration\s*:/gim, "घोषणा:"],
-  [/^Yours faithfully\s*,?$/gim, "भवदीय,"],
-  [/^Place\s*:/gim, "स्थान:"],
-  [/^Enclosures?\s*:/gim, "संलग्नक:"],
-  [/^Signature\s*:/gim, "हस्ताक्षर:"]
+const ENGLISH_DRAFT_STRUCTURE = /^[ \t]*(?:date|to|the officer|manager|relevant department|address|subject|respected sir|respected madam|farmer details|required documents|declaration|yours faithfully|place|enclosures?|signature|title|applicant name|mobile|age|village|district|state|land size|crop|bank status|verification|witness|submission notes|purpose)[ \t]*(?::|,|$)/im;
+const SCHEME_DRAFT_LABELS = {
+  "hi-IN": ["दिनांक", "सेवा में", "संबंधित अधिकारी / प्रबंधक", "संबंधित विभाग / बैंक / संस्था", "पता", "विषय", "माननीय महोदय / महोदया", "किसान का विवरण", "आवश्यक दस्तावेज", "घोषणा", "भवदीय", "स्थान", "संलग्नक", "हस्ताक्षर", "शीर्षक", "आवेदक का नाम", "मोबाइल", "आयु", "ग्राम", "जिला", "राज्य", "भूमि का आकार", "फसल", "बैंक की स्थिति", "सत्यापन", "गवाह", "जमा करने संबंधी निर्देश", "उद्देश्य"],
+  "kn-IN": ["ದಿನಾಂಕ", "ಇವರಿಗೆ", "ಸಂಬಂಧಿತ ಅಧಿಕಾರಿ / ವ್ಯವಸ್ಥಾಪಕರು", "ಸಂಬಂಧಿತ ಇಲಾಖೆ / ಬ್ಯಾಂಕ್ / ಸಂಸ್ಥೆ", "ವಿಳಾಸ", "ವಿಷಯ", "ಮಾನ್ಯರೇ", "ರೈತರ ವಿವರಗಳು", "ಅಗತ್ಯ ದಾಖಲೆಗಳು", "ಘೋಷಣೆ", "ವಂದನೆಗಳೊಂದಿಗೆ", "ಸ್ಥಳ", "ಲಗತ್ತುಗಳು", "ಸಹಿ", "ಶೀರ್ಷಿಕೆ", "ಅರ್ಜಿದಾರರ ಹೆಸರು", "ಮೊಬೈಲ್", "ವಯಸ್ಸು", "ಗ್ರಾಮ", "ಜಿಲ್ಲೆ", "ರಾಜ್ಯ", "ಜಮೀನಿನ ವಿಸ್ತೀರ್ಣ", "ಬೆಳೆ", "ಬ್ಯಾಂಕ್ ಸ್ಥಿತಿ", "ಪರಿಶೀಲನೆ", "ಸಾಕ್ಷಿ", "ಸಲ್ಲಿಕೆ ಸೂಚನೆಗಳು", "ಉದ್ದೇಶ"],
+  "ta-IN": ["தேதி", "பெறுநர்", "தொடர்புடைய அலுவலர் / மேலாளர்", "தொடர்புடைய துறை / வங்கி / நிறுவனம்", "முகவரி", "பொருள்", "மதிப்பிற்குரிய ஐயா / அம்மா", "விவசாயி விவரங்கள்", "தேவையான ஆவணங்கள்", "உறுதிமொழி", "இப்படிக்கு", "இடம்", "இணைப்புகள்", "கையொப்பம்", "தலைப்பு", "விண்ணப்பதாரர் பெயர்", "கைபேசி", "வயது", "கிராமம்", "மாவட்டம்", "மாநிலம்", "நில அளவு", "பயிர்", "வங்கி நிலை", "சரிபார்ப்பு", "சாட்சி", "சமர்ப்பிப்பு குறிப்புகள்", "நோக்கம்"],
+  "te-IN": ["తేదీ", "వారికి", "సంబంధిత అధికారి / మేనేజర్", "సంబంధిత శాఖ / బ్యాంకు / సంస్థ", "చిరునామా", "విషయం", "గౌరవనీయులైన సర్ / మేడమ్", "రైతు వివరాలు", "అవసరమైన పత్రాలు", "ప్రకటన", "విధేయుడిగా", "స్థలం", "జతపత్రాలు", "సంతకం", "శీర్షిక", "దరఖాస్తుదారు పేరు", "మొబైల్", "వయస్సు", "గ్రామం", "జిల్లా", "రాష్ట్రం", "భూమి విస్తీర్ణం", "పంట", "బ్యాంకు స్థితి", "ధృవీకరణ", "సాక్షి", "సమర్పణ సూచనలు", "ఉద్దేశ్యం"]
+};
+const ENGLISH_DRAFT_LABEL_PATTERNS = [
+  /^[ \t]*Date[ \t]*:/gim,
+  /^[ \t]*To[ \t]*,?[ \t]*$/gim,
+  /^[ \t]*The Officer[ \t]*\/[ \t]*Manager[ \t]*,?[ \t]*$/gim,
+  /^[ \t]*Relevant Department[ \t]*\/[ \t]*Bank[ \t]*\/[ \t]*Institution[ \t]*$/gim,
+  /^[ \t]*Address[ \t]*:/gim,
+  /^[ \t]*Subject[ \t]*:/gim,
+  /^[ \t]*Respected Sir[ \t]*\/[ \t]*Madam[ \t]*,?[ \t]*$/gim,
+  /^[ \t]*Farmer Details[ \t]*:/gim,
+  /^[ \t]*Required Documents[ \t]*:/gim,
+  /^[ \t]*Declaration[ \t]*:/gim,
+  /^[ \t]*Yours faithfully[ \t]*,?[ \t]*$/gim,
+  /^[ \t]*Place[ \t]*:/gim,
+  /^[ \t]*Enclosures?[ \t]*:/gim,
+  /^[ \t]*Signature[ \t]*:/gim,
+  /^[ \t]*Title[ \t]*:/gim,
+  /^[ \t]*Applicant Name[ \t]*:/gim,
+  /^[ \t]*Mobile[ \t]*:/gim,
+  /^[ \t]*Age[ \t]*:/gim,
+  /^[ \t]*Village[ \t]*:/gim,
+  /^[ \t]*District[ \t]*:/gim,
+  /^[ \t]*State[ \t]*:/gim,
+  /^[ \t]*Land Size[ \t]*:/gim,
+  /^[ \t]*Crop[ \t]*:/gim,
+  /^[ \t]*Bank Status[ \t]*:/gim,
+  /^[ \t]*Verification[ \t]*:/gim,
+  /^[ \t]*Witness[ \t]*:/gim,
+  /^[ \t]*Submission Notes[ \t]*:/gim,
+  /^[ \t]*Purpose[ \t]*:/gim
 ];
 const DASHBOARD_ANALYSIS_SECTION_IDS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
 const DASHBOARD_ANALYSIS_CACHE_KEY = `krishigyaanDashboardAnalysis:${profile.id || profile.mobile || "farmer"}`;
@@ -498,58 +518,31 @@ function renderSchemeDraftOptions() {
   if (draftAge) draftAge.value = profile.age || "";
 }
 
-function draftFormatGuide(type, language = "en-IN") {
-  const languageRule = language === "en-IN"
-    ? "Write every part of the document in English."
-    : SCHEME_DRAFT_LANGUAGE_RULES[language];
+function draftFormatGuide(type) {
   const guides = {
     "Application letter": [
-      "Write a formal application letter, not a list or a form.",
-      "Use this exact order:",
-      "Date: __________",
-      "To,",
-      "The Officer / Manager,",
-      "Relevant Department / Bank / Institution",
-      "Address: __________",
-      "Subject: Application for [scheme name without brackets]",
-      "Respected Sir/Madam,",
-      "Write exactly three clear body paragraphs separated by blank lines.",
-      "Paragraph 1: introduce the farmer naturally in complete sentences, including known location, crop, and land details.",
-      "Paragraph 2: explain the scheme benefit being requested, why the farmer is applying, and the relevant known eligibility details in complete sentences.",
-      "Paragraph 3: make a truthful declaration, request consideration, and state that the listed documents are enclosed.",
-      "Do not create a Farmer Details section. Do not turn profile fields into one-line bullets or label-value rows.",
-      "After the body paragraphs, add Required Documents as a short numbered enclosure list; this is the only part that may use a list.",
-      "Yours faithfully,",
-      "Name, mobile, place, date, and signature line.",
-      "Each body paragraph must contain two to four complete sentences. Never put every sentence on a separate line."
+      "Order: date, recipient, address, subject, salutation, three body paragraphs, closing, applicant details, signature, enclosures.",
+      "Paragraph 1 introduces the farmer and farm. Paragraph 2 explains the request and eligibility. Paragraph 3 declares truth and requests approval.",
+      "Do not make a farmer-details list. Only enclosures may be numbered."
     ].join("\n"),
     "Simple application form": [
-      "Create a clean fillable form with labeled rows.",
-      "Include scheme name, applicant name, mobile, age, address, village, district, state, land size, ownership, crop, season, bank linked, PM-KISAN status, purpose, required documents, declaration, signature.",
-      "Use one field per line in this pattern: Field Name: value or __________."
+      "Create a fillable form with one labeled field per line.",
+      "Include scheme, applicant, contact, address, farm, purpose, documents, declaration and signature."
     ].join("\n"),
     "Affidavit format": [
-      "Create a simple affidavit format.",
-      "Include title, applicant identity, address, land/crop details, scheme purpose, declarations in numbered points, verification statement, place, date, signature, witness lines.",
-      "Use formal affidavit wording but keep it farmer-friendly."
+      "Create a simple affidavit with identity, address, farm, purpose, numbered declarations, verification, place, date, signatures and witnesses."
     ].join("\n"),
     "Document checklist": [
-      "Create a scheme-specific checklist grouped by Applicant Details, Land/Farm Proof, Bank/Identity Proof, Crop/Scheme Proof, Submission Notes.",
-      "Use dash bullets only. Do not use checkbox brackets.",
-      "Mark unknown details with __________."
+      "Create a scheme-specific checklist grouped by applicant, farm, identity/bank, scheme proof and submission notes. Use dash bullets."
     ].join("\n"),
     "Grievance letter": [
-      "Use formal grievance letter format with date, recipient, subject, reference details, issue description, requested action, farmer details, enclosure list, closing, signature.",
-      "Keep the complaint specific to the selected scheme.",
-      "Write the main body as three complete prose paragraphs separated by blank lines. Do not use bullets or label-value rows in the body. Use a list only for enclosures."
+      "Order: date, recipient, subject, three prose paragraphs explaining reference, problem and requested action, closing, signature and enclosures."
     ].join("\n"),
     "Follow-up letter": [
-      "Use formal follow-up letter format with date, recipient, subject, previous application/reference line, current request, farmer details, enclosure list, closing, signature.",
-      "Mention blanks for reference number/date if unavailable.",
-      "Write the main body as three complete prose paragraphs separated by blank lines. Do not use bullets or label-value rows in the body. Use a list only for enclosures."
+      "Order: date, recipient, subject, three prose paragraphs covering previous application, status request and polite follow-up, closing, signature and enclosures."
     ].join("\n")
   };
-  return `${languageRule}\n${guides[type] || guides["Application letter"]}`;
+  return guides[type] || guides["Application letter"];
 }
 
 function cleanDraftText(text) {
@@ -568,8 +561,13 @@ function cleanDraftText(text) {
 
 function normalizeDraftLabels(text, language) {
   let normalized = cleanDraftText(text);
+  const translatedLabels = SCHEME_DRAFT_LABELS[language];
+  if (translatedLabels) {
+    ENGLISH_DRAFT_LABEL_PATTERNS.forEach((pattern, index) => {
+      normalized = normalized.replace(pattern, `${translatedLabels[index]}:`);
+    });
+  }
   if (language === "hi-IN") {
-    for (const [pattern, replacement] of HINDI_DRAFT_LABEL_REPLACEMENTS) normalized = normalized.replace(pattern, replacement);
     normalized = normalized
       .replace(/\bApplication for\b/gi, "हेतु आवेदन")
       .replace(/\bPM-Kisan Samman Nidhi\b/gi, "प्रधानमंत्री किसान सम्मान निधि")
@@ -586,10 +584,9 @@ function draftMatchesSelectedLanguage(text, language) {
   const scriptPattern = SCHEME_DRAFT_SCRIPT_PATTERNS[language];
   if (!scriptPattern) return false;
   const nativeLetters = (text.match(scriptPattern) || []).length;
-  const allLetters = (text.match(/\p{L}/gu) || []).length;
-  const withoutOfficialAbbreviations = text.replace(/\b(?:PM[-\s]?KISAN|PM|KISAN|DBT|KYC|e-KYC)\b/gi, "");
-  const leakedLatinWords = withoutOfficialAbbreviations.match(/[A-Za-z]{2,}/g) || [];
-  return nativeLetters >= 80 && nativeLetters / Math.max(allLetters, 1) >= 0.68 && leakedLatinWords.length === 0;
+  const withoutAllowedLatin = text.replace(/\b(?:PM[-\s]?KISAN|DBT|e?-?KYC)\b/gi, "");
+  const latinLetters = (withoutAllowedLatin.match(/[A-Za-z]/g) || []).length;
+  return nativeLetters >= 40 && nativeLetters / Math.max(nativeLetters + latinLetters, 1) >= 0.55;
 }
 
 function draftRequiresProseParagraphs(type) {
@@ -609,42 +606,27 @@ function draftHasFormalParagraphs(text, type) {
   return narrativeParagraphs.length >= 3;
 }
 
-async function enforceDraftLanguage(text, language, languageLabel, type) {
-  let normalized = normalizeDraftLabels(text, language);
-  if (draftMatchesSelectedLanguage(normalized, language)) return normalized;
-  const corrected = await kgAiText(`The draft below failed strict language validation. Rewrite the entire ${type} from the first line through the enclosure list only in ${languageLabel} and its native script.
-Translate every heading, recipient title, field label, salutation, scheme name, paragraph, closing, place, date, signature label, and enclosure label. Do not leave words such as Date, To, Officer, Manager, Address, Subject, Application, Respected, Farmer Details, Required Documents, Declaration, Yours faithfully, Place, Signature, or Enclosure in English.
-${SCHEME_DRAFT_LANGUAGE_RULES[language]}
-Keep numbers and the official abbreviations PM-KISAN, DBT, and KYC only when necessary. Return only the complete corrected document.
+async function finalizeSchemeDraft(text, language, languageLabel, type) {
+  const normalized = normalizeDraftLabels(text, language);
+  if (draftMatchesSelectedLanguage(normalized, language) && draftHasFormalParagraphs(normalized, type)) return normalized;
 
-Draft to correct:
-${normalized}`, { language, maxTokens: 1400 });
-  normalized = normalizeDraftLabels(corrected, language);
-  if (!draftMatchesSelectedLanguage(normalized, language)) {
-    throw new Error(`${languageLabel} draft validation failed. No mixed-language draft was displayed. Please generate it again.`);
+  const paragraphRule = draftRequiresProseParagraphs(type)
+    ? "Use exactly three short body paragraphs with complete sentences and blank lines. Use a list only for enclosures."
+    : "Follow the normal structure for this document type.";
+  const corrected = await kgAiText(`Rewrite this complete ${type} only in ${languageLabel} native script.
+Translate every heading and sentence. Latin text is allowed only for a farmer's proper name, official scheme abbreviation, or number.
+${paragraphRule}
+Keep the same facts and blanks. Include recipient, subject, closing, signature and enclosures. No markdown or explanation.
+
+${normalized}`, { language, maxTokens: 900 });
+  const finalDraft = normalizeDraftLabels(corrected, language);
+  if (!draftMatchesSelectedLanguage(finalDraft, language)) {
+    throw new Error(`${languageLabel} output was not in the selected language. Please try once more.`);
   }
-  return normalized;
-}
-
-async function enforceDraftFormat(text, language, languageLabel, type) {
-  if (draftHasFormalParagraphs(text, type)) return text;
-  const corrected = await kgAiText(`Rewrite the complete ${type} below only in ${languageLabel} (${language}). Preserve all truthful farmer and scheme details, but correct the document format.
-${SCHEME_DRAFT_LANGUAGE_RULES[language] || "Use English throughout."}
-
-The main body must contain exactly three natural prose paragraphs separated by blank lines. Each paragraph must contain two to four complete sentences. The first paragraph introduces the farmer and farm context, the second explains the scheme request and eligibility, and the third gives a truthful declaration and polite request for consideration.
-Do not use bullets, numbered points, one-field-per-line formatting, or a separate farmer-details list in the main body. A short numbered list is allowed only under the enclosure or required-documents heading after the prose body.
-Keep the formal date, recipient, subject, salutation, closing, applicant name, mobile, place, date, signature, and enclosure sections. Do not add markdown or commentary. Return only the ready-to-print document.
-
-Draft to reformat:
-${text}`, { language, maxTokens: 1400 });
-  const normalized = normalizeDraftLabels(corrected, language);
-  if (!draftMatchesSelectedLanguage(normalized, language)) {
-    throw new Error(`${languageLabel} draft validation failed after formatting. No mixed-language draft was displayed. Please generate it again.`);
+  if (!draftHasFormalParagraphs(finalDraft, type)) {
+    throw new Error(`The ${type.toLowerCase()} could not be arranged into proper paragraphs. Please try once more.`);
   }
-  if (!draftHasFormalParagraphs(normalized, type)) {
-    throw new Error(`The ${type.toLowerCase()} could not be formatted into proper paragraphs. Please generate it again.`);
-  }
-  return normalized;
+  return finalDraft;
 }
 
 function escapeDashboardHtml(value = "") {
@@ -705,30 +687,33 @@ async function generateSchemeDraft() {
     mobile: draftPhone.value || profile.mobile,
     age: draftAge.value || profile.age
   };
+  const draftProfile = {
+    name: updatedProfile.fullName,
+    mobile: updatedProfile.mobile,
+    age: updatedProfile.age,
+    village: updatedProfile.village,
+    district: updatedProfile.district,
+    state: updatedProfile.state,
+    landSize: updatedProfile.landSize,
+    ownership: updatedProfile.ownership,
+    crop: updatedProfile.primaryCrop,
+    season: updatedProfile.season,
+    bankLinked: updatedProfile.bank,
+    pmKisan: updatedProfile.pmkisan,
+    aadhaarLast4: updatedProfile.aadhaar
+  };
+  const draftScheme = { title: scheme.title, summary: scheme.summary, benefit: scheme.benefit, reason: scheme.reason };
   schemeAssistantResult.innerHTML = `<span class="empty-state">Generating ${type.toLowerCase()} in ${draftLanguageLabel}...</span>`;
   try {
-    const draft = await kgAiText(`Generate a complete, ready-to-print ${type} only in ${draftLanguageLabel} (${draftLanguage}) for this selected scheme: "${scheme.title}".
-Every heading, field label, salutation, instruction, paragraph, declaration, closing, signature label, and enclosure line must be in ${draftLanguageLabel}.
-For a non-English selection, use its native script throughout and translate or naturally transliterate headings, recipient titles, and scheme names. Keep only unavoidable official abbreviations and numbers unchanged.
-${SCHEME_DRAFT_LANGUAGE_RULES[draftLanguage] || "Use the selected language consistently from the first line through the signature and enclosure list."}
-Do not include an English translation, bilingual text, language note, explanation, or any text in another language.
-Before returning, silently check the entire draft and rewrite any accidental English structural text into ${draftLanguageLabel}.
-Do not stop after Subject. Generate the full draft from beginning to signature.
-For letters, write the main body as exactly three natural paragraphs with two to four complete sentences in each paragraph. Separate paragraphs with a blank line. Never format the main body as bullets, numbered points, short fragments, or one profile field per line. Lists are allowed only for required documents or enclosures.
-Keep each body paragraph concise so the full document fits in one response.
-Use the selected scheme details to decide the correct content, documents, purpose, recipient type, and benefit language.
-Use farmer information wherever available. Put the farmer's actual name, mobile, age, village, district, state, crop, land, bank, PM-KISAN, and other known profile details directly in the relevant fields.
-If any specific field value is missing, write only this blank line: __________
-Never use square brackets, round brackets, curly brackets, angle brackets, placeholder labels like "Current Date", or text like "[Bank Name]".
-Do not ask the user for more data. Do not invent Aadhaar, bank account, address, application number, dates, land record numbers, land verification, or e-KYC completion. If only the last four Aadhaar digits are present, label them clearly as the last four digits and never present them as the full Aadhaar number.
-Do not use asterisks or markdown.
-Never end midway. Include the closing, applicant name, mobile number, place, date, signature, and enclosure/document list when suitable.
-Format guide for this draft type:
-${draftFormatGuide(type, draftLanguage)}
-Farmer profile JSON: ${JSON.stringify(updatedProfile)}
-Selected scheme JSON: ${JSON.stringify(scheme)}`, { language: draftLanguage, maxTokens: 1400 });
-    const languageCheckedDraft = await enforceDraftLanguage(draft, draftLanguage, draftLanguageLabel, type);
-    const cleanDraft = await enforceDraftFormat(languageCheckedDraft, draftLanguage, draftLanguageLabel, type);
+    const draft = await kgAiText(`Create a complete ready-to-print ${type} only in ${draftLanguageLabel} native script.
+${SCHEME_DRAFT_LANGUAGE_RULES[draftLanguage] || "Use English throughout."}
+Translate headings and names naturally. Keep only official abbreviations and numbers in Latin text. No bilingual text, markdown or explanation.
+Use known data directly and __________ for missing data. Do not invent identity, bank, land-record, application or verification details. Aadhaar data is last four digits only.
+Keep the document concise and complete. For letters, use three short prose paragraphs; lists are only for documents.
+${draftFormatGuide(type)}
+Farmer: ${JSON.stringify(draftProfile)}
+Scheme: ${JSON.stringify(draftScheme)}`, { language: draftLanguage, maxTokens: 900 });
+    const cleanDraft = await finalizeSchemeDraft(draft, draftLanguage, draftLanguageLabel, type);
     schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication" data-draft-language="${draftLanguage}" data-draft-type="${escapeDashboardHtml(type)}"><pre>${escapeDashboardHtml(cleanDraft)}</pre></div>`;
     saveDashboardSnapshot("scheme-draft", schemeAssistantResult);
     printDraftBtn.classList.remove("hidden");
