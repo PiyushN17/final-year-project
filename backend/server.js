@@ -2,7 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 function loadEnvFile() {
   const envPath = path.join(__dirname, "..", ".env");
@@ -26,11 +26,15 @@ loadEnvFile();
 const PORT = Number(process.env.PORT || 5173);
 const FRONTEND_DIR = path.join(__dirname, "..", "frontend");
 
+function currentGroqModel(value, fallback) {
+  return !value || value === "llama-3.1-8b-instant" ? fallback : value;
+}
+
 const CONFIG = {
   groqKey: process.env.GROQ_API_KEY,
   groqKey2: process.env.GROQ_API_KEY2,
-  groqModel: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
-  groqModel2: process.env.GROQ_MODEL2 || process.env.GROQ_MODEL || "llama-3.1-8b-instant",
+  groqModel: currentGroqModel(process.env.GROQ_MODEL, "openai/gpt-oss-20b"),
+  groqModel2: currentGroqModel(process.env.GROQ_MODEL2, "openai/gpt-oss-120b"),
   cropKey: process.env.CROP_KINDWISE_API_KEY,
   plantKey: process.env.PLANT_ID_API_KEY,
   mongoUri: process.env.MONGODB_URI,
@@ -39,6 +43,7 @@ const CONFIG = {
 
 let mongoClient;
 let farmersCollection;
+let dashboardAnalysesCollection;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -111,6 +116,71 @@ async function getFarmersCollection() {
   farmersCollection = db.collection("farmers");
   await farmersCollection.createIndex({ mobile: 1 }, { unique: true });
   return farmersCollection;
+}
+
+async function getDashboardAnalysesCollection() {
+  if (!CONFIG.mongoUri) throw new Error("MONGODB_URI is missing in .env");
+  if (dashboardAnalysesCollection) return dashboardAnalysesCollection;
+  mongoClient = mongoClient || new MongoClient(CONFIG.mongoUri);
+  if (!mongoClient.topology?.isConnected?.()) await mongoClient.connect();
+  const db = mongoClient.db(CONFIG.mongoDbName);
+  dashboardAnalysesCollection = db.collection("dashboard_analyses");
+  await dashboardAnalysesCollection.createIndex({ farmerId: 1 }, { unique: true });
+  return dashboardAnalysesCollection;
+}
+
+const DASHBOARD_ANALYSIS_SECTIONS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
+
+async function resolveDashboardFarmer(body = {}) {
+  const farmerId = String(body.farmerId || "").trim();
+  const mobile = normalizeMobile(body.mobile);
+  const query = ObjectId.isValid(farmerId) ? { _id: new ObjectId(farmerId) } : { mobile };
+  if (!query._id && !/^[6-9]\d{9}$/.test(mobile)) return null;
+  const farmer = await (await getFarmersCollection()).findOne(query, { projection: { mobile: 1 } });
+  if (!farmer || (mobile && farmer.mobile !== mobile)) return null;
+  return { id: farmer._id.toString(), mobile: farmer.mobile };
+}
+
+function cleanDashboardAnalysis(value = {}) {
+  const sections = {};
+  for (const key of DASHBOARD_ANALYSIS_SECTIONS) {
+    if (typeof value.sections?.[key] === "string") sections[key] = value.sections[key].slice(0, 180000);
+  }
+  const signals = value.signals && typeof value.signals === "object" ? {
+    profileScore: Number(value.signals.profileScore) || 0,
+    schemeMatches: Number(value.signals.schemeMatches) || 0,
+    weather: value.signals.weather && typeof value.signals.weather === "object" ? value.signals.weather : null,
+    diseaseScore: value.signals.diseaseScore == null ? null : Number.isFinite(Number(value.signals.diseaseScore)) ? Number(value.signals.diseaseScore) : null,
+    soilScore: value.signals.soilScore == null ? null : Number.isFinite(Number(value.signals.soilScore)) ? Number(value.signals.soilScore) : null
+  } : {};
+  return { sections, signals };
+}
+
+async function handleDashboardAnalysis(body = {}) {
+  const farmer = await resolveDashboardFarmer(body);
+  if (!farmer) {
+    const error = new Error("Please login again to access saved dashboard analysis.");
+    error.status = 401;
+    throw error;
+  }
+  const collection = await getDashboardAnalysesCollection();
+  if (body.action === "load") {
+    const record = await collection.findOne({ farmerId: farmer.id }, { projection: { _id: 0, farmerId: 0, farmerMobile: 0 } });
+    return { ok: true, analysis: record || null };
+  }
+  if (body.action !== "save") {
+    const error = new Error("Invalid dashboard analysis action.");
+    error.status = 400;
+    throw error;
+  }
+  const analysis = cleanDashboardAnalysis(body.analysis);
+  const now = new Date();
+  await collection.updateOne(
+    { farmerId: farmer.id },
+    { $set: { farmerMobile: farmer.mobile, ...analysis, updatedAt: now }, $setOnInsert: { farmerId: farmer.id, createdAt: now } },
+    { upsert: true }
+  );
+  return { ok: true, updatedAt: now.toISOString() };
 }
 
 function normalizeMobile(value = "") {
@@ -230,10 +300,13 @@ async function generateWithGroq(prompt, apiKey, model, provider, maxTokens = 420
         { role: "user", content: prompt }
       ],
       temperature: 0.35,
-      max_tokens: aiTokenLimit(maxTokens)
+      max_tokens: aiTokenLimit(maxTokens),
+      ...(model.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {})
     })
   });
-  return { provider, model, text: data?.choices?.[0]?.message?.content?.trim() || "" };
+  const text = data?.choices?.[0]?.message?.content?.trim() || "";
+  if (!text) throw new Error(`${provider} returned an empty response`);
+  return { provider, model, text };
 }
 
 async function generateAiResponse(prompt, maxTokens) {
@@ -247,7 +320,10 @@ async function generateAiResponse(prompt, maxTokens) {
   try {
     return await generateWithGroq(prompt, CONFIG.groqKey2, CONFIG.groqModel2, "groq-fallback", maxTokens);
   } catch (fallbackError) {
-    const error = new Error(`KrishiBaba AI unavailable. Primary Groq failed: ${primaryError.message}. Fallback Groq failed: ${fallbackError.message}`);
+    const rateLimited = primaryError.status === 429 || fallbackError.status === 429;
+    const error = new Error(rateLimited
+      ? "KrishiBaba is receiving many requests. Please wait a few seconds and try again; your last saved analysis remains available."
+      : "KrishiBaba AI is temporarily unavailable. Please try again shortly; your last saved analysis remains available.");
     error.status = fallbackError.status || primaryError.status || 500;
     error.data = { primary: primaryError.data, fallback: fallbackError.data };
     throw error;
@@ -261,6 +337,10 @@ async function handleApi(req, res, pathname) {
     if (pathname === "/api/ai") {
       if (!body.prompt) return sendJson(res, 400, { error: "Missing prompt" });
       return sendJson(res, 200, await generateAiResponse(body.prompt, body.maxTokens));
+    }
+
+    if (pathname === "/api/dashboard-analysis") {
+      return sendJson(res, 200, await handleDashboardAnalysis(body));
     }
 
     if (pathname === "/api/auth/register") {

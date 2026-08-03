@@ -1,7 +1,11 @@
 const { handleOptions, proxyJson, readJson, requirePost, sendJson } = require("./_utils");
 
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-const GROQ_MODEL2 = process.env.GROQ_MODEL2 || GROQ_MODEL;
+function currentGroqModel(value, fallback) {
+  return !value || value === "llama-3.1-8b-instant" ? fallback : value;
+}
+
+const GROQ_MODEL = currentGroqModel(process.env.GROQ_MODEL, "openai/gpt-oss-20b");
+const GROQ_MODEL2 = currentGroqModel(process.env.GROQ_MODEL2, "openai/gpt-oss-120b");
 
 function isUsableApiKey(value) {
   return Boolean(value && !/^your_/i.test(value.trim()));
@@ -28,10 +32,13 @@ async function generateWithGroq(prompt, apiKey, model, provider, maxTokens = 420
         { role: "user", content: prompt }
       ],
       temperature: 0.35,
-      max_tokens: aiTokenLimit(maxTokens)
+      max_tokens: aiTokenLimit(maxTokens),
+      ...(model.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {})
     })
   });
-  return { provider, model, text: data?.choices?.[0]?.message?.content?.trim() || "" };
+  const text = data?.choices?.[0]?.message?.content?.trim() || "";
+  if (!text) throw new Error(`${provider} returned an empty response`);
+  return { provider, model, text };
 }
 
 async function generateAiResponse(prompt, maxTokens) {
@@ -45,7 +52,10 @@ async function generateAiResponse(prompt, maxTokens) {
   try {
     return await generateWithGroq(prompt, process.env.GROQ_API_KEY2, GROQ_MODEL2, "groq-fallback", maxTokens);
   } catch (fallbackError) {
-    const error = new Error(`KrishiBaba AI unavailable. Primary Groq failed: ${primaryError.message}. Fallback Groq failed: ${fallbackError.message}`);
+    const rateLimited = primaryError.status === 429 || fallbackError.status === 429;
+    const error = new Error(rateLimited
+      ? "KrishiBaba is receiving many requests. Please wait a few seconds and try again; your last saved analysis remains available."
+      : "KrishiBaba AI is temporarily unavailable. Please try again shortly; your last saved analysis remains available.");
     error.status = fallbackError.status || primaryError.status || 500;
     error.data = { primary: primaryError.data, fallback: fallbackError.data };
     throw error;

@@ -49,6 +49,139 @@ const dashboardSignals = {
 };
 
 const SCHEME_DRAFT_LANGUAGE_CODES = ["hi-IN", "en-IN", "gu-IN", "mr-IN", "kn-IN", "ta-IN", "te-IN"];
+const SCHEME_DRAFT_LANGUAGE_RULES = {
+  "gu-IN": "ગુજરાતી લિપિનો જ ઉપયોગ કરો. માળખાકીય શબ્દો માટે તારીખ, પ્રતિ, વિષય, માનનીય મહોદય/મહોદયા, અરજદારની વિગતો, જરૂરી દસ્તાવેજો, ઘોષણા, સ્થળ અને હસ્તાક્ષર જેવા ગુજરાતી શબ્દો વાપરો.",
+  "mr-IN": "फक्त मराठी देवनागरी लिपी वापरा. रचनात्मक मजकुरासाठी दिनांक, प्रति, विषय, माननीय महोदय/महोदया, अर्जदाराचा तपशील, आवश्यक कागदपत्रे, घोषणा, ठिकाण आणि स्वाक्षरी हे मराठी शब्द वापरा."
+};
+const DASHBOARD_ANALYSIS_SECTION_IDS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
+const DASHBOARD_ANALYSIS_CACHE_KEY = `krishigyaanDashboardAnalysis:${profile.id || profile.mobile || "farmer"}`;
+let dashboardAnalysisSaveTimer = null;
+let pendingDashboardAnalysis = null;
+
+function dashboardAnalysisIdentity() {
+  return { farmerId: profile.id || "", mobile: profile.mobile || "" };
+}
+
+function captureDashboardAnalysis() {
+  return {
+    sections: Object.fromEntries(DASHBOARD_ANALYSIS_SECTION_IDS.map((id) => [id, document.getElementById(id)?.innerHTML || ""])),
+    signals: JSON.parse(JSON.stringify(dashboardSignals))
+  };
+}
+
+function applyDashboardAnalysis(analysis) {
+  if (!analysis?.sections) return false;
+  for (const id of DASHBOARD_ANALYSIS_SECTION_IDS) {
+    const html = analysis.sections[id];
+    const element = document.getElementById(id);
+    if (element && typeof html === "string" && html.trim()) element.innerHTML = html;
+  }
+  if (analysis.signals && typeof analysis.signals === "object") Object.assign(dashboardSignals, analysis.signals);
+  updateDashboardMetrics();
+  return true;
+}
+
+function readLocalDashboardAnalysis() {
+  try {
+    return JSON.parse(localStorage.getItem(DASHBOARD_ANALYSIS_CACHE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function cacheDashboardAnalysis(analysis) {
+  try {
+    localStorage.setItem(DASHBOARD_ANALYSIS_CACHE_KEY, JSON.stringify(analysis));
+  } catch (error) {
+    console.warn("Dashboard analysis cache could not be updated:", error);
+  }
+}
+
+function readLegacyDashboardAnalysis() {
+  const legacyKeys = {
+    cropAdvice: ["crop-advice"],
+    weatherResult: ["weather"],
+    longTermResult: ["long-term"],
+    cropResult: ["crop-health"],
+    soilResult: ["soil-health"],
+    schemeAssistantResult: ["scheme-draft", "scheme-guidance"],
+    modernResult: ["modern-technique"],
+    chatAnswer: ["chat-answer"]
+  };
+  const sections = {};
+  for (const [id, keys] of Object.entries(legacyKeys)) {
+    const records = keys.map((key) => {
+      try {
+        return JSON.parse(localStorage.getItem(`krishigyaanOffline:dashboard:v3:${key}`) || "null");
+      } catch {
+        return null;
+      }
+    }).filter((record) => record?.html).sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+    if (records[0]?.html) sections[id] = records[0].html;
+  }
+  if (!Object.keys(sections).length) return null;
+  const signals = { ...dashboardSignals };
+  if (sections.weatherResult) {
+    const template = document.createElement("template");
+    template.innerHTML = sections.weatherResult;
+    const days = [...template.content.querySelectorAll(".forecast-day")].map((day) => ({
+      rain: Number.parseFloat(day.querySelector(".rain-plot b")?.textContent || "0") || 0,
+      min: Number.parseFloat(day.querySelector(".temperature-labels b:first-child")?.textContent || "0") || 0,
+      max: Number.parseFloat(day.querySelector(".temperature-labels b:last-child")?.textContent || "0") || 0,
+      wind: Number.parseFloat(day.querySelector(".forecast-wind")?.textContent.match(/[\d.]+/)?.[0] || "0") || 0,
+      code: 0
+    }));
+    if (days.length) signals.weather = calculateWeatherMetrics(days);
+  }
+  return { sections, signals };
+}
+
+async function persistDashboardAnalysis(analysis = captureDashboardAnalysis()) {
+  cacheDashboardAnalysis(analysis);
+  const response = await fetch(kgApiUrl("/api/dashboard-analysis"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "save", ...dashboardAnalysisIdentity(), analysis })
+  });
+  if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Dashboard analysis could not be saved.");
+}
+
+function scheduleDashboardAnalysisSave() {
+  pendingDashboardAnalysis = captureDashboardAnalysis();
+  cacheDashboardAnalysis(pendingDashboardAnalysis);
+  window.clearTimeout(dashboardAnalysisSaveTimer);
+  dashboardAnalysisSaveTimer = window.setTimeout(() => {
+    const analysis = pendingDashboardAnalysis;
+    pendingDashboardAnalysis = null;
+    persistDashboardAnalysis(analysis).catch((error) => console.warn("Dashboard analysis save failed:", error));
+  }, 500);
+}
+
+async function restoreDashboardAnalysis() {
+  const localAnalysis = readLocalDashboardAnalysis();
+  const legacyAnalysis = localAnalysis ? null : readLegacyDashboardAnalysis();
+  const immediateAnalysis = localAnalysis || legacyAnalysis;
+  if (immediateAnalysis) applyDashboardAnalysis(immediateAnalysis);
+  try {
+    const response = await fetch(kgApiUrl("/api/dashboard-analysis"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "load", ...dashboardAnalysisIdentity() })
+    });
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || "Saved dashboard analysis could not be loaded.");
+    const { analysis } = await response.json();
+    if (analysis) {
+      applyDashboardAnalysis(analysis);
+      cacheDashboardAnalysis(analysis);
+      return;
+    }
+    if (immediateAnalysis) {
+      await persistDashboardAnalysis(immediateAnalysis);
+    }
+  } catch (error) {
+    console.warn("Saved dashboard analysis load failed:", error);
+  }
+}
 
 const schemes = [
   {
@@ -386,6 +519,7 @@ function isOfflineLikeError(error) {
 
 function saveDashboardSnapshot(key, element) {
   if (element?.innerHTML) kgSaveOfflineSnapshot(`dashboard:v3:${key}`, element.innerHTML);
+  scheduleDashboardAnalysisSave();
 }
 
 function showDashboardSnapshot(key, element, label, error) {
@@ -429,6 +563,7 @@ async function generateSchemeDraft() {
     const draft = await kgAiText(`Generate a complete, ready-to-print ${type} only in ${draftLanguageLabel} (${draftLanguage}) for this selected scheme: "${scheme.title}".
 Every heading, field label, salutation, instruction, paragraph, declaration, closing, signature label, and enclosure line must be in ${draftLanguageLabel}.
 For a non-English selection, use its native script throughout and translate or naturally transliterate headings, recipient titles, and scheme names. Keep only unavoidable official abbreviations and numbers unchanged.
+${SCHEME_DRAFT_LANGUAGE_RULES[draftLanguage] || "Use the selected language consistently from the first line through the signature and enclosure list."}
 Do not include an English translation, bilingual text, language note, explanation, or any text in another language.
 Before returning, silently check the entire draft and rewrite any accidental English structural text into ${draftLanguageLabel}.
 Do not stop after Subject. Generate the full draft from beginning to signature.
@@ -1009,6 +1144,7 @@ guardDashboard();
 kgInitShared({ askLocation: true });
 summarizeProfile();
 renderSchemes();
+restoreDashboardAnalysis();
 initDashboardScrollSpy();
 initSpeechToText();
 window.addEventListener("kg-language-change", renderSchemes);

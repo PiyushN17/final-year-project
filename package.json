@@ -5,7 +5,7 @@
   "description": "KrishiGyaan frontend and backend prototype",
   "scripts": {
     "start": "node backend/server.js",
-    "check": "node --check backend/server.js && node --check api/_utils.js && node --check api/ai.js && node --check api/crop-health.js && node --check api/plant-health.js && node --check api/auth/_mongo.js && node --check api/auth/register.js && node --check api/auth/login.js && node --check api/auth/forgot-password.js && node --check frontend/locales.js && node --check frontend/shared.js && node --check frontend/app.js && node --check frontend/dashboard.js && node --check frontend/sw.js"
+    "check": "node --check backend/server.js && node --check api/_utils.js && node --check api/ai.js && node --check api/crop-health.js && node --check api/plant-health.js && node --check api/dashboard-analysis.js && node --check api/auth/_mongo.js && node --check api/auth/register.js && node --check api/auth/login.js && node --check api/auth/forgot-password.js && node --check frontend/locales.js && node --check frontend/shared.js && node --check frontend/app.js && node --check frontend/dashboard.js && node --check frontend/sw.js"
   },
   "dependencies": {
     "mongodb": "^6.20.0"
