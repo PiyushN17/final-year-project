@@ -108,9 +108,12 @@ function applyDashboardAnalysis(analysis) {
   savedWeatherGuidance.forEach((element) => element.remove());
   const restoredDraft = schemeAssistantResult?.querySelector("#printableApplication");
   const restoredDraftLanguage = restoredDraft?.dataset.draftLanguage || "";
+  const restoredDraftType = restoredDraft?.dataset.draftType || "";
   const invalidSavedDraft = Boolean(restoredDraft) && (
     !SCHEME_DRAFT_LANGUAGE_CODES.includes(restoredDraftLanguage)
     || !draftMatchesSelectedLanguage(restoredDraft.textContent || "", restoredDraftLanguage)
+    || !restoredDraftType
+    || !draftHasFormalParagraphs(restoredDraft.textContent || "", restoredDraftType)
   );
   if (invalidSavedDraft && schemeAssistantResult) {
     schemeAssistantResult.innerHTML = `<span class="empty-state">Generate a new application draft in one selected language.</span>`;
@@ -496,10 +499,13 @@ function renderSchemeDraftOptions() {
 }
 
 function draftFormatGuide(type, language = "en-IN") {
-  if (language !== "en-IN") return SCHEME_DRAFT_LANGUAGE_RULES[language];
+  const languageRule = language === "en-IN"
+    ? "Write every part of the document in English."
+    : SCHEME_DRAFT_LANGUAGE_RULES[language];
   const guides = {
     "Application letter": [
-      "Use this exact structure:",
+      "Write a formal application letter, not a list or a form.",
+      "Use this exact order:",
       "Date: __________",
       "To,",
       "The Officer / Manager,",
@@ -507,12 +513,15 @@ function draftFormatGuide(type, language = "en-IN") {
       "Address: __________",
       "Subject: Application for [scheme name without brackets]",
       "Respected Sir/Madam,",
-      "Body paragraphs using farmer details and scheme purpose.",
-      "Farmer Details: Name, mobile, age, village, district, state, land size, crop, bank status.",
-      "Required Documents: list scheme-specific documents.",
-      "Declaration paragraph.",
+      "Write exactly three clear body paragraphs separated by blank lines.",
+      "Paragraph 1: introduce the farmer naturally in complete sentences, including known location, crop, and land details.",
+      "Paragraph 2: explain the scheme benefit being requested, why the farmer is applying, and the relevant known eligibility details in complete sentences.",
+      "Paragraph 3: make a truthful declaration, request consideration, and state that the listed documents are enclosed.",
+      "Do not create a Farmer Details section. Do not turn profile fields into one-line bullets or label-value rows.",
+      "After the body paragraphs, add Required Documents as a short numbered enclosure list; this is the only part that may use a list.",
       "Yours faithfully,",
-      "Name and signature line."
+      "Name, mobile, place, date, and signature line.",
+      "Each body paragraph must contain two to four complete sentences. Never put every sentence on a separate line."
     ].join("\n"),
     "Simple application form": [
       "Create a clean fillable form with labeled rows.",
@@ -531,14 +540,16 @@ function draftFormatGuide(type, language = "en-IN") {
     ].join("\n"),
     "Grievance letter": [
       "Use formal grievance letter format with date, recipient, subject, reference details, issue description, requested action, farmer details, enclosure list, closing, signature.",
-      "Keep the complaint specific to the selected scheme."
+      "Keep the complaint specific to the selected scheme.",
+      "Write the main body as three complete prose paragraphs separated by blank lines. Do not use bullets or label-value rows in the body. Use a list only for enclosures."
     ].join("\n"),
     "Follow-up letter": [
       "Use formal follow-up letter format with date, recipient, subject, previous application/reference line, current request, farmer details, enclosure list, closing, signature.",
-      "Mention blanks for reference number/date if unavailable."
+      "Mention blanks for reference number/date if unavailable.",
+      "Write the main body as three complete prose paragraphs separated by blank lines. Do not use bullets or label-value rows in the body. Use a list only for enclosures."
     ].join("\n")
   };
-  return guides[type] || guides["Application letter"];
+  return `${languageRule}\n${guides[type] || guides["Application letter"]}`;
 }
 
 function cleanDraftText(text) {
@@ -581,6 +592,23 @@ function draftMatchesSelectedLanguage(text, language) {
   return nativeLetters >= 80 && nativeLetters / Math.max(allLetters, 1) >= 0.68 && leakedLatinWords.length === 0;
 }
 
+function draftRequiresProseParagraphs(type) {
+  return ["Application letter", "Grievance letter", "Follow-up letter"].includes(type);
+}
+
+function draftHasFormalParagraphs(text, type) {
+  if (!draftRequiresProseParagraphs(type)) return true;
+  const narrativeParagraphs = String(text || "")
+    .split(/\n\s*\n/)
+    .map((part) => part.replace(/\s+/g, " ").trim())
+    .filter((part) => {
+      if (part.length < 70 || part.split(/\s+/).length < 9) return false;
+      if (/^(?:[-•*]|\d+[.)])\s*/u.test(part)) return false;
+      return /[.!?।॥。]($|\s)/u.test(part);
+    });
+  return narrativeParagraphs.length >= 3;
+}
+
 async function enforceDraftLanguage(text, language, languageLabel, type) {
   let normalized = normalizeDraftLabels(text, language);
   if (draftMatchesSelectedLanguage(normalized, language)) return normalized;
@@ -594,6 +622,27 @@ ${normalized}`, { language, maxTokens: 1400 });
   normalized = normalizeDraftLabels(corrected, language);
   if (!draftMatchesSelectedLanguage(normalized, language)) {
     throw new Error(`${languageLabel} draft validation failed. No mixed-language draft was displayed. Please generate it again.`);
+  }
+  return normalized;
+}
+
+async function enforceDraftFormat(text, language, languageLabel, type) {
+  if (draftHasFormalParagraphs(text, type)) return text;
+  const corrected = await kgAiText(`Rewrite the complete ${type} below only in ${languageLabel} (${language}). Preserve all truthful farmer and scheme details, but correct the document format.
+${SCHEME_DRAFT_LANGUAGE_RULES[language] || "Use English throughout."}
+
+The main body must contain exactly three natural prose paragraphs separated by blank lines. Each paragraph must contain two to four complete sentences. The first paragraph introduces the farmer and farm context, the second explains the scheme request and eligibility, and the third gives a truthful declaration and polite request for consideration.
+Do not use bullets, numbered points, one-field-per-line formatting, or a separate farmer-details list in the main body. A short numbered list is allowed only under the enclosure or required-documents heading after the prose body.
+Keep the formal date, recipient, subject, salutation, closing, applicant name, mobile, place, date, signature, and enclosure sections. Do not add markdown or commentary. Return only the ready-to-print document.
+
+Draft to reformat:
+${text}`, { language, maxTokens: 1400 });
+  const normalized = normalizeDraftLabels(corrected, language);
+  if (!draftMatchesSelectedLanguage(normalized, language)) {
+    throw new Error(`${languageLabel} draft validation failed after formatting. No mixed-language draft was displayed. Please generate it again.`);
+  }
+  if (!draftHasFormalParagraphs(normalized, type)) {
+    throw new Error(`The ${type.toLowerCase()} could not be formatted into proper paragraphs. Please generate it again.`);
   }
   return normalized;
 }
@@ -665,7 +714,8 @@ ${SCHEME_DRAFT_LANGUAGE_RULES[draftLanguage] || "Use the selected language consi
 Do not include an English translation, bilingual text, language note, explanation, or any text in another language.
 Before returning, silently check the entire draft and rewrite any accidental English structural text into ${draftLanguageLabel}.
 Do not stop after Subject. Generate the full draft from beginning to signature.
-Keep each paragraph short so the full document fits in one response.
+For letters, write the main body as exactly three natural paragraphs with two to four complete sentences in each paragraph. Separate paragraphs with a blank line. Never format the main body as bullets, numbered points, short fragments, or one profile field per line. Lists are allowed only for required documents or enclosures.
+Keep each body paragraph concise so the full document fits in one response.
 Use the selected scheme details to decide the correct content, documents, purpose, recipient type, and benefit language.
 Use farmer information wherever available. Put the farmer's actual name, mobile, age, village, district, state, crop, land, bank, PM-KISAN, and other known profile details directly in the relevant fields.
 If any specific field value is missing, write only this blank line: __________
@@ -677,8 +727,9 @@ Format guide for this draft type:
 ${draftFormatGuide(type, draftLanguage)}
 Farmer profile JSON: ${JSON.stringify(updatedProfile)}
 Selected scheme JSON: ${JSON.stringify(scheme)}`, { language: draftLanguage, maxTokens: 1400 });
-    const cleanDraft = await enforceDraftLanguage(draft, draftLanguage, draftLanguageLabel, type);
-    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication" data-draft-language="${draftLanguage}"><pre>${escapeDashboardHtml(cleanDraft)}</pre></div>`;
+    const languageCheckedDraft = await enforceDraftLanguage(draft, draftLanguage, draftLanguageLabel, type);
+    const cleanDraft = await enforceDraftFormat(languageCheckedDraft, draftLanguage, draftLanguageLabel, type);
+    schemeAssistantResult.innerHTML = `<div class="diagnosis-row printable-application colorful-response" id="printableApplication" data-draft-language="${draftLanguage}" data-draft-type="${escapeDashboardHtml(type)}"><pre>${escapeDashboardHtml(cleanDraft)}</pre></div>`;
     saveDashboardSnapshot("scheme-draft", schemeAssistantResult);
     printDraftBtn.classList.remove("hidden");
     if ("speechSynthesis" in window && window.speechSynthesis.paused) window.speechSynthesis.resume();

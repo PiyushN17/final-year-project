@@ -1250,6 +1250,13 @@ textarea {
   line-height: 1.6;
 }
 
+.printable-application pre {
+  color: #202722;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
 .crop-health-panel .spacious-result {
   max-height: none;
   overflow: visible;
