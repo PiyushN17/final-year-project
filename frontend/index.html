@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&family=Noto+Sans+Gujarati:wght@400;600;700;800;900&family=Noto+Sans+Kannada:wght@400;600;700;800;900&family=Noto+Sans+Tamil:wght@400;600;700;800;900&family=Noto+Sans+Telugu:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="refresh.css?v=5" />
+    <link rel="stylesheet" href="refresh.css?v=6" />
   </head>
   <body data-page="landing">
     <div class="page-shell">
@@ -22,116 +22,74 @@
           <div class="nav-links" id="navLinks">
             <a href="#home" data-i18n="navHome">Home</a>
             <a href="#features" data-i18n="navFeatures">Features</a>
-            <a href="#solutions" data-i18n="navSolutions">Solutions</a>
-            <a href="#about" data-i18n="navAbout">About</a>
-            <a href="#contact" data-i18n="navContact">Contact</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#why-needed">Why needed</a>
             <a href="login.html" data-i18n="navLogin">Login</a>
             <a href="register.html" class="btn btn-small btn-primary" data-i18n="navStarted">Get Started</a>
           </div>
         </nav>
       </header>
 
-      <main>
-        <section class="hero section" id="home">
-          <div class="hero-content speakable">
-            <div class="eyebrow"><i data-lucide="sparkles"></i><span data-i18n="heroEyebrow">Future agriculture for modern India</span></div>
-            <h1 data-i18n="heroTitle">Empowering Farmers with AI-Driven Intelligence</h1>
-            <p class="hero-subtitle" data-i18n="heroSubtitle">KrishiGyaan helps farmers make smarter crop decisions, access government schemes, detect crop diseases, analyze soil health, and receive guidance in their local language.</p>
-            <div class="hero-actions">
-              <a href="register.html" class="btn btn-primary"><i data-lucide="user-plus"></i><span data-i18n="getStarted">Get Started</span></a>
-            </div>
-            <div class="hero-metrics">
-              <div><strong>10+</strong><span data-i18n="metricServices">Services</span></div>
-              <div><strong data-i18n="metricMulti">Multi-language</strong><span data-i18n="metricSupport">Support</span></div>
-              <div><strong data-i18n="metricAi">Smart AI</strong><span data-i18n="metricAdvisory">Advisory</span></div>
+      <main class="simple-home">
+        <section class="simple-hero" id="home">
+          <div class="speakable">
+            <p class="simple-label">Farming help website</p>
+            <h1>Simple farming help in one place</h1>
+            <p>KrishiGyaan helps farmers check weather, scan crop photos, find government schemes and ask farming questions in their preferred language.</p>
+            <div class="simple-actions">
+              <a class="btn btn-primary" href="register.html">Register</a>
+              <a class="btn simple-outline-button" href="#features">View features</a>
             </div>
           </div>
+          <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&amp;fit=crop&amp;w=980&amp;q=80" alt="Farmer standing in a green field" />
+        </section>
 
-          <div class="hero-visual">
-            <div class="photo-card">
-              <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=980&q=80" alt="Farmer in a green field using a mobile phone" />
-            </div>
+        <section class="simple-section" id="features">
+          <h2>What this project can do</h2>
+          <p>Login is required to use these tools.</p>
+          <div class="simple-feature-list">
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#crop-advisory" tabindex="0"><h3>Crop advice</h3><p>Get suggestions using crop, land and weather details.</p><small>Login required</small></article>
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#weather" tabindex="0"><h3>Weather</h3><p>See the 10-day forecast and simple farm guidance.</p><small>Login required</small></article>
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#crop-health" tabindex="0"><h3>Crop scan</h3><p>Upload a crop photo to check possible health problems.</p><small>Login required</small></article>
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#schemes" tabindex="0"><h3>Government schemes</h3><p>Check possible scheme matches and official links.</p><small>Login required</small></article>
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#soil-health" tabindex="0"><h3>Soil check</h3><p>Upload a soil photo for a basic analysis.</p><small>Login required</small></article>
+            <article class="simple-feature locked-feature speakable" data-feature-link="dashboard.html#ai-chat" tabindex="0"><h3>KrishiBaba</h3><p>Send a farming question and get a simple answer.</p><small>Login required</small></article>
           </div>
         </section>
 
-        <section class="trust section compact speakable">
-          <p data-i18n="trustText">Helping bridge the gap between agriculture and technology for modern India.</p>
-          <div class="trust-badges">
-            <span><i data-lucide="landmark"></i><b data-i18n="badgeSchemes">Govt Schemes</b></span>
-            <span><i data-lucide="wheat"></i><b data-i18n="badgeCrop">Crop Intelligence</b></span>
-            <span><i data-lucide="cloud-sun"></i><b data-i18n="badgeWeather">Weather Aware</b></span>
-            <span><i data-lucide="mic-2"></i><b data-i18n="badgeVoice">Voice First</b></span>
-          </div>
+        <section class="simple-section" id="how-it-works">
+          <h2>How to use it</h2>
+          <ol class="simple-steps">
+            <li>Create a farmer account.</li>
+            <li>Add crop and land information.</li>
+            <li>Open the dashboard.</li>
+            <li>Choose the tool you need.</li>
+          </ol>
         </section>
 
-        <section class="features section" id="features">
-          <div class="section-heading speakable">
-            <span class="eyebrow"><i data-lucide="layout-grid"></i><span data-i18n="featuresEyebrow">10+ intelligent farming services</span></span>
-            <h2 data-i18n="featuresTitle">Everything a farmer needs, unified in one trusted platform.</h2>
-            <p data-i18n="featuresCopy">From crop planning to subsidy awareness, KrishiGyaan turns scattered agricultural information into simple, timely, local guidance that farmers can act on immediately. These features unlock after registration and login.</p>
-          </div>
-          <div class="feature-grid">
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#crop-advisory" tabindex="0"><i data-lucide="sprout"></i><h3 data-i18n="featureCropTitle">Smart Crop Advisory</h3><p data-i18n="featureCropText">Real-time sowing, irrigation, pest and fertilizer guidance.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#schemes" tabindex="0"><i data-lucide="badge-indian-rupee"></i><h3 data-i18n="featureSchemeTitle">Sahayata Scheme Support</h3><p data-i18n="featureSchemeText">Discover eligible subsidies and welfare benefits instantly.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#crop-health" tabindex="0"><i data-lucide="scan-search"></i><h3 data-i18n="featureDiseaseTitle">Crop Disease Detection</h3><p data-i18n="featureDiseaseText">Upload crop images for AI diagnosis.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#soil-health" tabindex="0"><i data-lucide="layers-3"></i><h3 data-i18n="featureSoilTitle">Soil Health Analysis</h3><p data-i18n="featureSoilText">Upload soil images for nutrient and moisture insights.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#ai-chat" tabindex="0"><i data-lucide="bot"></i><h3 data-i18n="chatTitle">KrishiBaba</h3><p data-i18n="chatCopy">Ask KrishiBaba about crop selection, pest control, fertilizer, irrigation, schemes, weather, or market readiness.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#voice-support" tabindex="0"><i data-lucide="volume-2"></i><h3 data-i18n="featureVoiceTitle">Voice + Local Language Support</h3><p data-i18n="featureVoiceText">Accessible for every farmer.</p><small data-i18n="featureLocked">Login required</small></article>
-            <article class="feature-card locked-feature speakable" data-feature-link="dashboard.html#modern-techniques" tabindex="0"><i data-lucide="tractor"></i><h3 data-i18n="modernTitle">Learn Modern Farming Techniques</h3><p data-i18n="modernCopy">KrishiGyaan compares traditional farming practices from your region with modern low-investment techniques that can increase output and profitability.</p><small data-i18n="featureLocked">Login required</small></article>
-          </div>
+        <section class="simple-section" id="why-needed">
+          <h2>Why this project is useful</h2>
+          <p>Farm information is often spread across different websites and may be difficult to understand. This project keeps common farming tools together and gives results in a simpler form.</p>
+          <ul class="simple-facts">
+            <li><strong>86%</strong> of operational landholders in India are small or marginal. <a href="https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1906888&amp;lang=2&amp;reg=48" target="_blank" rel="noopener noreferrer">Government source</a></li>
+            <li>Plant pests and diseases can cause losses of <strong>up to 40%</strong> of global crop production. <a href="https://www.fao.org/plant-production-protection/about/" target="_blank" rel="noopener noreferrer">FAO source</a></li>
+            <li>Agriculture supports <strong>46.1%</strong> of employment in India. <a href="https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/may/doc202557551101.pdf" target="_blank" rel="noopener noreferrer">Economic Survey reference</a></li>
+          </ul>
         </section>
 
-        <section class="solutions section split" id="solutions">
-          <div class="section-heading align-left speakable">
-            <span class="eyebrow"><i data-lucide="route"></i><span data-i18n="howEyebrow">Simple workflow</span></span>
-            <h2 data-i18n="howTitle">How KrishiGyaan works</h2>
-            <p data-i18n="howCopy">The platform creates a farmer profile, understands land and crop context, then gives AI-backed recommendations across the season.</p>
-          </div>
-          <div class="step-grid">
-            <div class="step-card speakable"><span>01</span><p data-i18n="stepOne">Register your profile</p></div>
-            <div class="step-card speakable"><span>02</span><p data-i18n="stepTwo">Add crop and land details</p></div>
-            <div class="step-card speakable"><span>03</span><p data-i18n="stepThree">Login to dashboard</p></div>
-            <div class="step-card speakable"><span>04</span><p data-i18n="stepFour">Scan crop / soil images</p></div>
-            <div class="step-card speakable"><span>05</span><p data-i18n="stepFive">Check schemes and weather</p></div>
-            <div class="step-card speakable"><span>06</span><p data-i18n="stepSix">Grow smarter with AI</p></div>
+        <section class="simple-callout">
+          <h2>Try KrishiGyaan</h2>
+          <p>Create an account to open the farming dashboard.</p>
+          <div class="simple-actions">
+            <a class="btn btn-primary" href="register.html">Register now</a>
+            <a class="btn simple-outline-button" href="#features">View features</a>
           </div>
         </section>
-
-        <section class="why section" id="about">
-          <div class="why-panel speakable">
-            <div class="section-heading align-left">
-              <span class="eyebrow"><i data-lucide="shield-check"></i><span data-i18n="whyEyebrow">Why KrishiGyaan</span></span>
-              <h2 data-i18n="whyTitle">Built for yield, resilience, and rural digital inclusion.</h2>
-              <p data-i18n="whyCopy">KrishiGyaan reduces crop loss, improves yield decisions, saves time, increases awareness of benefits, and supports rural digital inclusion through multilingual voice-first guidance.</p>
-            </div>
-            <div class="why-list">
-              <span><i data-lucide="trending-down"></i><b data-i18n="whyOne">Reduces crop loss</b></span>
-              <span><i data-lucide="bar-chart-3"></i><b data-i18n="whyTwo">Improves yield decisions</b></span>
-              <span><i data-lucide="timer"></i><b data-i18n="whyThree">Saves time</b></span>
-              <span><i data-lucide="megaphone"></i><b data-i18n="whyFour">Increases benefits awareness</b></span>
-              <span><i data-lucide="users"></i><b data-i18n="whyFive">Supports rural digital inclusion</b></span>
-            </div>
-          </div>
-        </section>
-
-        <section class="evidence section" aria-labelledby="evidence-title">
-          <div class="section-heading speakable"><span class="eyebrow"><i data-lucide="book-open-check"></i><span>Why this project matters</span></span><h2 id="evidence-title">The need is real. The numbers are independently published.</h2><p>KrishiGyaan focuses on simple access to weather, crop-health, and scheme guidance because these are practical problems—not made-up success claims.</p></div>
-          <div class="evidence-grid">
-            <article class="evidence-card speakable"><strong>86%</strong><h3>Small or marginal holdings</h3><p>About 86% of India's operational landholders are small or marginal, making affordable and easy-to-use guidance especially important.</p><a href="https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1906888&amp;lang=2&amp;reg=48" target="_blank" rel="noopener noreferrer">Government of India source <i data-lucide="arrow-up-right"></i></a></article>
-            <article class="evidence-card speakable"><strong>Up to 40%</strong><h3>Crop production at risk</h3><p>FAO estimates that pests and diseases cause losses of up to 40% of global crop production each year. Earlier detection can support quicker action.</p><a href="https://www.fao.org/plant-production-protection/about/" target="_blank" rel="noopener noreferrer">FAO source <i data-lucide="arrow-up-right"></i></a></article>
-            <article class="evidence-card speakable"><strong>46.1%</strong><h3>Share of employment</h3><p>Agriculture supports 46.1% of employment in India, so clearer field information can serve a large part of the country's working population.</p><a href="https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/may/doc202557551101.pdf" target="_blank" rel="noopener noreferrer">Economic Survey reference <i data-lucide="arrow-up-right"></i></a></article>
-          </div>
-          <p class="evidence-note"><i data-lucide="info"></i> These are public research figures, not KrishiGyaan usage statistics. Live weather and analysis results are shown only after a user requests them.</p>
-        </section>
-
-        <section class="cta section" id="contact"><div class="cta-banner speakable"><h2 data-i18n="ctaTitle">Join the future of smart farming today.</h2><p data-i18n="ctaCopy">Bring AI crop intelligence, local language support, and scheme discovery to every field.</p><div><a class="btn btn-white" href="register.html" data-i18n="registerNow">Register Now</a><a class="btn btn-outline-white" href="#features" data-i18n="exploreFeatures">Explore Features</a></div></div></section>
       </main>
 
-      <footer class="footer footer-pro speakable">
-        <div class="footer-main"><a class="brand" href="#home"><span class="brand-mark"><i data-lucide="sprout"></i></span><span>KrishiGyaan</span></a><p data-i18n="footerCopy">AI-driven rural empowerment for smarter, more resilient agriculture. Built for farmers, advisors, rural teams, and institutions working to modernize Indian agriculture.</p></div>
-        <div class="footer-links"><a href="#about" data-i18n="footerAbout">About</a><a href="#features" data-i18n="footerFeatures">Features</a><a href="register.html" data-i18n="footerRegister">Register</a><a href="login.html" data-i18n="footerLogin">Login</a><a href="#" data-i18n="footerPrivacy">Privacy</a><a href="#" data-i18n="footerTerms">Terms</a></div>
-        <div class="footer-contact"><strong data-i18n="footerContact">Contact</strong><span>hello@krishigyaan.ai</span><span>Farmer helpline: 1800-000-AGRI</span><span data-i18n="footerLocation">India-first multilingual agriculture intelligence</span></div>
-        <div class="social-links"><a href="#" aria-label="Social updates"><i data-lucide="send"></i></a><a href="#" aria-label="Community"><i data-lucide="network"></i></a><a href="#" aria-label="Messages"><i data-lucide="messages-square"></i></a></div>
+      <footer class="simple-footer speakable">
+        <p><strong>KrishiGyaan</strong> — a student farming support project.</p>
+        <div><a href="#features">Features</a><a href="register.html">Register</a><a href="login.html">Login</a></div>
       </footer>
 
       <div class="voice-panel">
