@@ -5,8 +5,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f8faf2",
-  "theme_color": "#1b5e20",
+  "background_color": "#f7f6ef",
+  "theme_color": "#285b38",
   "icons": [
     {
       "src": "https://img.freepik.com/premium-vector/small-tree-tob-flat-vector-illustration-white-background_674398-2580.jpg?semt=ais_hybrid&w=740&q=80",
