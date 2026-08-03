@@ -76,8 +76,7 @@ KrishiGyaan solves this by giving farmers a single AI-assisted dashboard that un
 KrishiGyaan/
 ├── api/
 │   ├── ai.js
-│   ├── crop-health.js
-│   ├── plant-health.js
+│   ├── health.js
 │   ├── _utils.js
 │   └── auth/
 │       ├── _mongo.js

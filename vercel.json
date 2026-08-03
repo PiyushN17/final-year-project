@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/crop-health",
+      "destination": "/api/health?provider=crop"
+    },
+    {
+      "source": "/api/plant-health",
+      "destination": "/api/health?provider=plant"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
