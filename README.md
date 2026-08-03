@@ -1,229 +1,223 @@
 # KrishiGyaan
 
-KrishiGyaan is an AI-powered agriculture support platform built for Indian farmers. It brings crop advisory, weather-aware planning, government scheme discovery, crop and plant disease scanning, soil guidance, multilingual voice support, and secure farmer registration into one web dashboard.
+KrishiGyaan is a standalone final-year BCA project that brings farmer registration, weather-based field planning, agricultural scheme assistance, crop and plant health analysis, soil guidance, multilingual interaction, and an AI farming assistant into one web application.
 
-This project was created for a hackathon by **Team KrishiYoddha** with the goal of making digital agriculture guidance more accessible, local-language friendly, and practical for real farmers. KrishiGyaan won **1st position at the HyperVerge Academy Launchpad Hackathon 2026**.
+The project is designed for Indian farmers who need practical information in a simple interface without moving between separate weather, crop-health, government-scheme, and advisory services.
 
-## Problem Statement
+## Project Objectives
 
-Farmers often need to move between many disconnected sources for weather, crop disease help, government schemes, soil advice, and expert guidance. This creates delays, confusion, and missed benefits, especially for farmers who prefer local languages or voice-based interaction.
+- Maintain a reusable farmer profile containing crop, land, location, and access details.
+- Present short-term weather information as clear farm actions.
+- Help farmers identify relevant government support schemes and prepare application drafts.
+- Analyse crop, plant, and soil images with external agricultural APIs and AI-assisted guidance.
+- Provide multilingual text, speech input, and text-to-speech support.
+- Preserve the farmer's latest dashboard analysis across refreshes.
+- Give an authorised administrator controlled access to registered-user and dashboard records.
 
-KrishiGyaan solves this by giving farmers a single AI-assisted dashboard that understands their profile, crop, land, location, and language preference.
+## Main Features
 
-## Key Features
+### Farmer account management
 
-- **Farmer Registration and Login**
-  - Secure farmer profile creation with MongoDB storage.
-  - Phone number and password based login.
-  - Form validation for mobile number, age, land size, Aadhaar last digits, password, and required profile fields.
+- Multi-step registration with field validation.
+- Mobile-number and password login.
+- PBKDF2 password hashing with unique salts.
+- MongoDB-backed farmer profiles.
 
-- **KrishiBaba AI Assistant**
-  - Uses Groq as the primary AI provider.
-  - Supports a fallback Groq key to reduce presentation/demo failure risk.
-  - Answers farming, schemes, crop, soil, weather, and advisory questions.
+### Farmer dashboard
 
-- **Government Scheme Support**
-  - Matches farmer profile data with relevant schemes.
-  - Generates scheme-specific application letters, forms, affidavits, checklists, grievance letters, and follow-up letters.
-  - Supports draft language selection.
+- Profile-aware crop advisory and field-action planning.
+- Ten-day Open-Meteo forecast with temperature, rainfall, and wind presentation.
+- Longer-term crop-planning trend where forecast data is available.
+- Crop Kindwise crop-disease identification.
+- Plant.id plant-health assessment.
+- Cloudinary storage for uploaded crop, plant, and soil photographs.
+- Soil-health score and improvement guidance.
+- Government-scheme matching and multilingual application drafting.
+- KrishiBaba farming assistant powered by Groq.
+- Saved dashboard analysis restored from MongoDB after refresh.
 
-- **Crop and Plant Disease Detection**
-  - Crop disease scanning through Crop Kindwise API.
-  - Plant health assessment through Plant.id API.
-  - KrishiBaba provides farmer-friendly low-cost treatment guidance.
+### Accessibility and language support
 
-- **Weather and Crop Advisory**
-  - Uses Open-Meteo forecast data.
-  - Provides short-term sowing, irrigation, spraying, and harvest guidance.
-  - Includes 30-day crop growth outlook where seasonal data is available.
+- Interface translations for English and major Indian languages.
+- Language-controlled AI responses.
+- Browser text-to-speech and speech-to-text support.
+- Responsive layouts for desktop and mobile screens.
 
-- **Soil Health Guidance**
-  - Uses farmer profile and optional soil photo signals.
-  - Produces soil score, improvement advice, and crop suitability guidance.
+### Administration
 
-- **Multilingual Experience**
-  - Supports English, Hindi, Bhojpuri, Gujarati, Marathi, Kannada, Tamil, Telugu, Punjabi, and Haryanvi.
-  - Uses predefined local language translations for static and dashboard UI.
-  - Location-based language detection and manual language selection.
+- Separate token-protected administrator login.
+- Farmer search and record inspection.
+- Create, read, update, and delete operations for farmer profiles.
+- Edit or delete saved dashboard analysis.
+- Rename, classify, open, and delete uploaded Cloudinary images.
+- Cascading cleanup of related MongoDB records when a farmer is deleted.
 
-- **Voice Accessibility**
-  - Text-to-speech for clicked lines/headings/content.
-  - Speech-to-text microphone support for AI chat and scheme doubt input.
-  - Global mute/unmute audio control.
-
-- **Vercel Deployment Ready**
-  - Static frontend served from `frontend/`.
-  - Serverless API routes served from `api/`.
-  - `vercel.json` rewrites configured for production.
-
-## Tech Stack
+## Technology Stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | HTML, CSS, Vanilla JavaScript |
-| Backend API | Node.js serverless functions |
-| Local Dev Server | Node.js HTTP server |
+| User interface | HTML5, CSS3, vanilla JavaScript |
+| Serverless backend | Node.js functions on Vercel |
+| Local development server | Node.js HTTP server |
 | Database | MongoDB Atlas |
-| AI | Groq API |
-| Crop Disease API | Crop Kindwise |
-| Plant Health API | Plant.id |
-| Weather Data | Open-Meteo |
+| AI assistant | Groq API |
+| Crop analysis | Crop Kindwise API |
+| Plant analysis | Plant.id API |
+| Weather | Open-Meteo API |
+| Image storage | Cloudinary |
 | Deployment | Vercel |
+
+## Architecture
+
+```text
+Browser
+  |
+  |-- Static HTML, CSS and JavaScript
+  |
+  |-- /api/auth/* ------------ MongoDB Atlas
+  |-- /api/dashboard-analysis  MongoDB Atlas
+  |-- /api/dashboard-upload --- Cloudinary + MongoDB Atlas
+  |-- /api/ai ----------------- Groq
+  |-- /api/crop-health -------- Crop Kindwise
+  |-- /api/plant-health ------- Plant.id
+  `-- Open-Meteo requests ------ Weather and geocoding data
+```
 
 ## Project Structure
 
 ```text
-KrishiGyaan/
+final-year-project/
 ├── api/
-│   ├── ai.js
-│   ├── health.js
+│   ├── auth/
+│   │   ├── _mongo.js
+│   │   ├── register.js
+│   │   ├── login.js
+│   │   └── forgot-password.js
 │   ├── _utils.js
-│   └── auth/
-│       ├── _mongo.js
-│       ├── register.js
-│       ├── login.js
-│       └── forgot-password.js
+│   ├── admin.js
+│   ├── ai.js
+│   ├── dashboard-analysis.js
+│   ├── dashboard-upload.js
+│   └── health.js
 ├── backend/
 │   └── server.js
 ├── frontend/
 │   ├── index.html
-│   ├── register.html
 │   ├── login.html
+│   ├── register.html
 │   ├── dashboard.html
+│   ├── admin-login.html
+│   ├── admin-dashboard.html
 │   ├── app.js
-│   ├── dashboard.js
 │   ├── shared.js
+│   ├── dashboard.js
+│   ├── admin.js
 │   ├── locales.js
-│   └── styles.css
+│   ├── styles.css
+│   ├── refresh.css
+│   ├── manifest.webmanifest
+│   └── sw.js
 ├── env.example
 ├── package.json
-├── package-lock.json
 └── vercel.json
 ```
 
 ## Environment Variables
 
-Create a local `.env` file based on `env.example`.
+Copy `env.example` to `.env` for local development. Never commit real credentials.
 
 ```env
 PORT=5173
-GROQ_API_KEY=your_primary_groq_api_key
-GROQ_API_KEY2=your_fallback_groq_api_key
-GROQ_MODEL=llama-3.1-8b-instant
-CROP_KINDWISE_API_KEY=your_crop_kindwise_api_key
-PLANT_ID_API_KEY=your_plant_id_api_key
 MONGODB_URI=your_mongodb_connection_string
 MONGODB_DB=krishigyaan
+
+GROQ_API_KEY=your_primary_groq_key
+GROQ_API_KEY2=your_fallback_groq_key
+GROQ_MODEL=your_supported_groq_model
+
+CROP_KINDWISE_API_KEY=your_crop_kindwise_key
+PLANT_ID_API_KEY=your_plant_id_key
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+# Or: CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=replace_with_a_secure_password
+ADMIN_SESSION_SECRET=replace_with_a_long_random_secret
 ```
 
-Important: `.env` is intentionally ignored by Git. Do not commit real API keys.
+The same server-side values must be configured in Vercel for Production, Preview, and Development environments before redeployment.
 
 ## Local Setup
 
-1. Clone the repository.
-
 ```bash
-git clone https://github.com/PiyushN17/KrishiGyaan.git
-cd KrishiGyaan
-```
-
-2. Install dependencies.
-
-```bash
+git clone https://github.com/PiyushN17/final-year-project.git
+cd final-year-project
 npm install
-```
-
-3. Create `.env`.
-
-```bash
 cp env.example .env
-```
-
-Then add your actual API keys and MongoDB URI.
-
-4. Start the local server.
-
-```bash
 npm start
 ```
 
-5. Open the app.
+Open `http://127.0.0.1:5173`.
 
-```text
-http://127.0.0.1:5173
-```
+## Available Pages
+
+| Path | Purpose |
+| --- | --- |
+| `/` | Public project introduction |
+| `/login.html` | Farmer login |
+| `/register.html` | Farmer registration |
+| `/dashboard.html` | Protected farmer services |
+| `/admin-login.html` | Administrator login |
+| `/admin-dashboard.html` | Administrator data centre |
+
+## API Routes
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/auth/register` | POST | Create a farmer account |
+| `/api/auth/login` | POST | Authenticate a farmer |
+| `/api/auth/forgot-password` | POST | Prototype account lookup |
+| `/api/ai` | POST | Generate KrishiBaba responses |
+| `/api/dashboard-analysis` | POST | Save or load dashboard analysis |
+| `/api/dashboard-upload` | POST | Upload and record dashboard images |
+| `/api/crop-health` | POST | Proxy crop identification requests |
+| `/api/plant-health` | POST | Proxy plant-health requests |
+| `/api/admin` | POST | Authenticated administrator operations |
+
+The two health paths are preserved by explicit Vercel rewrites and are internally handled by `api/health.js`.
+
+## Database Collections
+
+- `farmers`: registration profile, password hash, timestamps, and login information.
+- `dashboard_analyses`: one latest saved dashboard-analysis document per farmer.
+- `dashboard_uploads`: Cloudinary metadata and image links associated with farmers.
 
 ## Verification
 
-Run syntax checks for all backend, API, and frontend JavaScript files:
+Run the repository syntax checks:
 
 ```bash
 npm run check
 ```
 
-Recommended production smoke tests:
-
-- Open `/`, `/login.html`, `/register.html`, and `/dashboard.html`.
-- Test `/api/ai` with a small prompt.
-- Register a farmer and confirm login.
-- Upload a valid crop or plant image for health scanning.
-- Confirm Vercel environment variables are configured before demo.
-
-## Vercel Deployment
-
-The project is ready for Vercel deployment.
-
-Required Vercel environment variables:
-
-```text
-GROQ_API_KEY
-GROQ_API_KEY2
-GROQ_MODEL
-CROP_KINDWISE_API_KEY
-PLANT_ID_API_KEY
-MONGODB_URI
-MONGODB_DB
-```
-
-After updating environment variables in Vercel, redeploy the project so serverless functions receive the latest values.
-
-## Main API Routes
-
-| Route | Method | Purpose |
-| --- | --- | --- |
-| `/api/ai` | POST | KrishiBaba AI responses |
-| `/api/auth/register` | POST | Farmer registration |
-| `/api/auth/login` | POST | Farmer login |
-| `/api/auth/forgot-password` | POST | Prototype account lookup |
-| `/api/crop-health` | POST | Crop Kindwise disease detection proxy |
-| `/api/plant-health` | POST | Plant.id health assessment proxy |
+Before a production release, verify registration, login, dashboard restoration, weather data, AI requests, image upload, disease-analysis providers, administrator CRUD actions, and mobile layouts.
 
 ## Security Notes
 
-- Passwords are hashed with PBKDF2 before storing in MongoDB.
-- Real API keys are loaded only from environment variables.
-- `.env`, `node_modules`, and Vercel local files are excluded from Git.
-- API provider keys are never exposed to frontend JavaScript.
+- API credentials remain on the server and are loaded from environment variables.
+- Farmer passwords are salted and hashed before storage.
+- Administrator operations require a signed, expiring bearer token.
+- Uploaded-image links are restricted to valid Cloudinary URLs in the admin interface.
+- Saved HTML is sanitised before display in the administrator view.
+- Production deployments should replace the example administrator credentials and rotate exposed secrets.
 
-## Hackathon Impact
+## Documentation
 
-KrishiGyaan is designed to help farmers:
+Phase 1 documentation covers requirements, analysis, design, database structure, diagrams, testing, security, deployment, and interface documentation. Phase 2 is reserved for organised source-code listings and code-level explanation.
 
-- Reduce crop loss through early disease detection.
-- Understand government scheme eligibility faster.
-- Receive local-language, voice-friendly farming support.
-- Make better sowing, irrigation, fertilizer, and harvest decisions.
-- Access digital agriculture guidance from one simple dashboard.
+## Project Status
 
-## Team
-
-**Team KrishiYoddha**
-
-- Piyush Nath (Lead)
-- Preeti Gorwade
-- Abhay
-- Bhagyalakshmi Siddavatam
-
-## Status
-
-Production-ready hackathon prototype with working Vercel deployment, MongoDB-backed authentication, AI advisory, multilingual UI, and third-party crop/plant health API integrations.
+KrishiGyaan is a working final-year project deployed as a Vercel-compatible web application with MongoDB persistence and integrations for AI, weather, crop analysis, plant analysis, and cloud image storage.
