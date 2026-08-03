@@ -60,14 +60,16 @@
 
         <section class="dashboard-panel weather-panel" id="weather">
           <div class="panel-copy speakable">
-            <span class="eyebrow"><i data-lucide="cloud-sun"></i><span data-i18n="weatherTitle">10-day weather and sowing guidance</span></span>
+            <span class="eyebrow"><i data-lucide="cloud-sun"></i><span>Weather planning</span></span>
             <h2 data-i18n="weatherTitle">10-day weather and sowing guidance</h2>
-            <p data-i18n="weatherCopy">Uses free Open-Meteo forecast data for rainfall, temperature, wind, and short-term farm decisions.</p>
+            <p data-i18n="weatherCopy">See temperature, rain, and wind together before planning irrigation, spraying, sowing, or harvest work.</p>
             <button class="btn btn-primary" id="weatherBtn"><i data-lucide="cloud-cog"></i><span data-i18n="weatherButton">Get Weather Advisory</span></button>
           </div>
           <div class="weather-results">
-            <div class="result-card spacious-result" id="weatherResult"><span class="empty-state">Weather guidance will appear here after checking location.</span></div>
-            <div class="result-card ai-accent-card" id="longTermResult"><h3 data-i18n="longTermTitle">30-day growth outlook</h3><p data-i18n="longTermCopy">Long-term guidance uses seasonal trend data where available and falls back to the 16-day trend for practical planning.</p></div>
+            <div class="result-card spacious-result weather-result" id="weatherResult">
+              <div class="weather-empty"><div class="empty-chart" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p>Check your location to draw the 10-day forecast.</p></div>
+            </div>
+            <div class="result-card outlook-card" id="longTermResult"><div><span class="eyebrow">Planning trend</span><h3>30-day crop growth direction</h3></div><div class="outlook-empty" aria-hidden="true"><span></span><span></span><span></span></div><p class="empty-state">Temperature, rainfall, and soil-moisture direction will appear here.</p></div>
           </div>
         </section>
 

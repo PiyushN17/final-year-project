@@ -841,20 +841,38 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
   dashboardSignals.weather = weatherMetrics;
   updateDashboardMetrics();
   const advice = buildCropAdvice(days, weatherMetrics);
-  weatherResult.innerHTML = `<div class="diagnosis"><div class="diagnosis-row"><strong>Location</strong><p>${place}</p><p>${latitude.toFixed(3)}, ${longitude.toFixed(3)}</p></div>${days.map((day) => `<div class="diagnosis-row"><strong>${day.date} - ${weatherCodeText(day.code)}</strong><p>${day.min.toFixed(1)}°C to ${day.max.toFixed(1)}°C, rain ${day.rain.toFixed(1)} mm, probability ${day.probability}%, wind ${day.wind.toFixed(1)} km/h.</p></div>`).join("")}<div class="diagnosis-row" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing AI recommendation...</p></div></div>`;
+  const temperatureFloor = Math.floor(Math.min(...days.map((day) => day.min))) - 2;
+  const temperatureCeiling = Math.ceil(Math.max(...days.map((day) => day.max))) + 2;
+  const temperatureSpan = Math.max(temperatureCeiling - temperatureFloor, 1);
+  const maximumRain = Math.max(...days.map((day) => day.rain), 1);
+  const totalRain = days.reduce((sum, day) => sum + day.rain, 0);
+  const averageWind = days.reduce((sum, day) => sum + day.wind, 0) / Math.max(days.length, 1);
+  const rainyDays = days.filter((day) => day.probability >= 50 || day.rain >= 2).length;
+  const forecastColumns = days.map((day) => {
+    const temperatureStart = ((day.min - temperatureFloor) / temperatureSpan) * 100;
+    const temperatureWidth = Math.max(((day.max - day.min) / temperatureSpan) * 100, 8);
+    const rainHeight = Math.max((day.rain / maximumRain) * 100, day.rain > 0 ? 6 : 2);
+    const dayLabel = new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", day: "numeric" });
+    return `<div class="forecast-day" role="listitem"><div class="forecast-day-head"><strong>${dayLabel}</strong><span>${weatherCodeText(day.code)}</span></div><div class="rain-plot" title="${day.rain.toFixed(1)} mm rain"><span style="--rain-height:${rainHeight.toFixed(1)}%"></span><b>${day.rain.toFixed(1)}</b><small>mm</small></div><div class="temperature-track" aria-label="Temperature ${day.min.toFixed(0)} to ${day.max.toFixed(0)} degrees Celsius"><span style="--temp-start:${temperatureStart.toFixed(1)}%;--temp-width:${temperatureWidth.toFixed(1)}%"></span></div><div class="temperature-labels"><b>${day.min.toFixed(0)}°</b><b>${day.max.toFixed(0)}°</b></div><div class="forecast-wind">Wind ${day.wind.toFixed(0)} km/h</div></div>`;
+  }).join("");
+  weatherResult.innerHTML = `<div class="forecast-board"><div class="forecast-summary"><div><span class="eyebrow">Your location</span><h3>${place}</h3></div><div class="forecast-summary-metrics"><span><b>${totalRain.toFixed(1)} mm</b>10-day rain</span><span><b>${rainyDays}</b>rain-likely days</span><span><b>${averageWind.toFixed(0)} km/h</b>average wind</span></div></div><div class="forecast-legend"><span><i class="legend-rain"></i>Rainfall</span><span><i class="legend-temp"></i>Temperature range</span><small>${temperatureFloor}°C to ${temperatureCeiling}°C scale</small></div><div class="forecast-scroll"><div class="forecast-days" role="list" aria-label="10-day weather forecast">${forecastColumns}</div></div><div class="weather-advice" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing a short field recommendation...</p></div></div>`;
   cropAdvice.innerHTML = advice.map((item) => `<div class="diagnosis-row"><strong>Farmer advisory</strong><p>${item}</p></div>`).join("");
 
   if (longTerm?.daily?.time?.length) {
     const rain = longTerm.daily.precipitation_sum || [];
     const temp = longTerm.daily.temperature_2m_mean || [];
     const soil = longTerm.daily.soil_moisture_0_to_7cm_mean || [];
-    const totalRain = rain.reduce((sum, value) => sum + (value || 0), 0);
+    const longTermRain = rain.reduce((sum, value) => sum + (value || 0), 0);
     const avgTemp = temp.reduce((sum, value) => sum + (value || 0), 0) / Math.max(temp.length, 1);
     const avgSoil = soil.reduce((sum, value) => sum + (value || 0), 0) / Math.max(soil.length, 1);
-    longTermResult.innerHTML = `<h3>${(KG_TRANSLATIONS[kgActiveLanguage] || KG_EN).longTermTitle}</h3><p>Next 30 days indicate about ${totalRain.toFixed(1)} mm cumulative rain, average temperature near ${avgTemp.toFixed(1)}°C, and soil moisture index around ${avgSoil.toFixed(2)}. Use this as a planning trend, not a guarantee.</p><p>For long-duration crops, keep drainage and irrigation flexibility ready. For short-duration vegetables, prefer staggered sowing to reduce weather risk.</p>`;
+    const weeklyRain = Array.from({ length: Math.ceil(rain.length / 7) }, (_, weekIndex) => rain.slice(weekIndex * 7, weekIndex * 7 + 7).reduce((sum, value) => sum + (value || 0), 0));
+    const maximumWeeklyRain = Math.max(...weeklyRain, 1);
+    const weeklyBars = weeklyRain.map((value, index) => `<div><span style="--week-height:${Math.max((value / maximumWeeklyRain) * 100, 3).toFixed(1)}%"></span><b>${value.toFixed(0)} mm</b><small>Week ${index + 1}</small></div>`).join("");
+    longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Planning trend</span><h3>30-day crop growth direction</h3></div><div class="outlook-metrics"><span><b>${longTermRain.toFixed(0)} mm</b>Total rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>${avgSoil.toFixed(2)}</b>Soil moisture</span></div><div class="weekly-rain"><div class="weekly-rain-title"><strong>Weekly rainfall direction</strong><small>Forecast, not a guarantee</small></div><div class="weekly-bars">${weeklyBars}</div></div><p class="growth-note">Keep drainage and irrigation flexible. For short-duration vegetables, stagger sowing so one weather event does not affect the whole crop.</p>`;
   } else {
     const rain16 = days.reduce((sum, day) => sum + day.rain, 0);
-    longTermResult.innerHTML = `<h3>${(KG_TRANSLATIONS[kgActiveLanguage] || KG_EN).longTermTitle}</h3><p>Seasonal endpoint was unavailable, so KrishiGyaan is using the 10-day trend. Expected rain is ${rain16.toFixed(1)} mm. Re-check weekly before sowing long-duration crops.</p>`;
+    const avgTemp = days.reduce((sum, day) => sum + ((day.min + day.max) / 2), 0) / Math.max(days.length, 1);
+    longTermResult.innerHTML = `<div class="outlook-heading"><span class="eyebrow">Short-term fallback</span><h3>Crop growth direction</h3></div><div class="outlook-metrics"><span><b>${rain16.toFixed(1)} mm</b>10-day rain</span><span><b>${avgTemp.toFixed(1)}°C</b>Average temp.</span><span><b>Weekly</b>Re-check</span></div><p class="growth-note">The 30-day source is unavailable, so this direction uses the current 10-day forecast. Re-check before sowing a long-duration crop.</p>`;
   }
 
   const soilStatus = document.getElementById("soilStatus");
