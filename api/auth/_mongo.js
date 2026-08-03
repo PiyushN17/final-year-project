@@ -4,6 +4,7 @@ const { MongoClient } = require("mongodb");
 let client;
 let farmersCollection;
 let dashboardAnalysesCollection;
+let dashboardUploadsCollection;
 
 function sendJson(res, status, data) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -72,6 +73,18 @@ async function getDashboardAnalysesCollection() {
   return dashboardAnalysesCollection;
 }
 
+async function getDashboardUploadsCollection() {
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is missing");
+  if (dashboardUploadsCollection) return dashboardUploadsCollection;
+  client = client || new MongoClient(process.env.MONGODB_URI);
+  await client.connect();
+  const db = client.db(process.env.MONGODB_DB || "krishigyaan");
+  dashboardUploadsCollection = db.collection("dashboard_uploads");
+  await dashboardUploadsCollection.createIndex({ farmerId: 1, createdAt: -1 });
+  await dashboardUploadsCollection.createIndex({ publicId: 1 }, { unique: true });
+  return dashboardUploadsCollection;
+}
+
 function normalizeMobile(value = "") {
   return String(value).replace(/\D/g, "").slice(-10);
 }
@@ -100,6 +113,7 @@ function cleanProfile(profile = {}) {
 module.exports = {
   cleanProfile,
   getDashboardAnalysesCollection,
+  getDashboardUploadsCollection,
   getFarmersCollection,
   handleOptions,
   hashPassword,

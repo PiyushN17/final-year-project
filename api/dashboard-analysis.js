@@ -15,6 +15,7 @@ const ANALYSIS_SECTIONS = [
   "longTermResult",
   "cropResult",
   "soilResult",
+  "schemeMatcher",
   "schemeAssistantResult",
   "modernResult",
   "chatAnswer"

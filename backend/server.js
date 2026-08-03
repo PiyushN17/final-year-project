@@ -23,6 +23,9 @@ function loadEnvFile() {
 
 loadEnvFile();
 
+const adminApiHandler = require("../api/admin");
+const dashboardUploadApiHandler = require("../api/dashboard-upload");
+
 const PORT = Number(process.env.PORT || 5173);
 const FRONTEND_DIR = path.join(__dirname, "..", "frontend");
 
@@ -129,7 +132,7 @@ async function getDashboardAnalysesCollection() {
   return dashboardAnalysesCollection;
 }
 
-const DASHBOARD_ANALYSIS_SECTIONS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
+const DASHBOARD_ANALYSIS_SECTIONS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeMatcher", "schemeAssistantResult", "modernResult", "chatAnswer"];
 
 async function resolveDashboardFarmer(body = {}) {
   const farmerId = String(body.farmerId || "").trim();
@@ -333,6 +336,16 @@ async function generateAiResponse(prompt, maxTokens) {
 async function handleApi(req, res, pathname) {
   try {
     const body = await readJson(req);
+
+    if (pathname === "/api/admin" || pathname === "/api/dashboard-upload") {
+      req.body = body;
+      res.status = (status) => { res.statusCode = status; return res; };
+      res.json = (data) => {
+        if (!res.headersSent) res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.end(JSON.stringify(data));
+      };
+      return (pathname === "/api/admin" ? adminApiHandler : dashboardUploadApiHandler)(req, res);
+    }
 
     if (pathname === "/api/ai") {
       if (!body.prompt) return sendJson(res, 400, { error: "Missing prompt" });

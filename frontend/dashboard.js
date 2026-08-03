@@ -40,6 +40,8 @@ const weatherRiskMetric = document.getElementById("weatherRisk");
 const schemeMatchesMetric = document.getElementById("schemeMatches");
 let speechMicStream = null;
 let schemeChatBusy = false;
+const imageDataUrlCache = new WeakMap();
+const cloudUploadCache = new WeakMap();
 const dashboardSignals = {
   profileScore: 0,
   schemeMatches: 0,
@@ -98,7 +100,7 @@ const ENGLISH_DRAFT_LABEL_PATTERNS = [
   /^[ \t]*Submission Notes[ \t]*:/gim,
   /^[ \t]*Purpose[ \t]*:/gim
 ];
-const DASHBOARD_ANALYSIS_SECTION_IDS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeAssistantResult", "modernResult", "chatAnswer"];
+const DASHBOARD_ANALYSIS_SECTION_IDS = ["cropAdvice", "weatherResult", "longTermResult", "cropResult", "soilResult", "schemeMatcher", "schemeAssistantResult", "modernResult", "chatAnswer"];
 const DASHBOARD_ANALYSIS_CACHE_KEY = `krishigyaanDashboardAnalysis:${profile.id || profile.mobile || "farmer"}`;
 let dashboardAnalysisSaveTimer = null;
 let pendingDashboardAnalysis = null;
@@ -905,12 +907,54 @@ function initSpeechToText() {
 }
 
 function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
+  if (imageDataUrlCache.has(file)) return imageDataUrlCache.get(file);
+  const promise = new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+  imageDataUrlCache.set(file, promise);
+  return promise;
+}
+
+async function cloudReadyImage(file) {
+  const source = await fileToBase64(file);
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.82));
+    };
+    image.onerror = () => resolve(source);
+    image.src = source;
+  });
+}
+
+async function saveImageToCloud(file, kind) {
+  let uploads = cloudUploadCache.get(file);
+  if (!uploads) {
+    uploads = new Map();
+    cloudUploadCache.set(file, uploads);
+  }
+  if (uploads.has(kind)) return uploads.get(kind);
+  const promise = (async () => {
+    const image = await cloudReadyImage(file);
+    const response = await fetch(kgApiUrl("/api/dashboard-upload"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ farmerId: profile.id, mobile: profile.mobile, kind, fileName: file.name, image })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Image could not be saved to cloud storage.");
+    return data.upload;
+  })();
+  uploads.set(kind, promise);
+  return promise;
 }
 
 async function readImageMeta(file) {
@@ -1250,6 +1294,7 @@ async function analyzeSoilHealth() {
     return;
   }
   soilResult.innerHTML = `<span class="empty-state">Checking soil profile and preparing crop growth path...</span>`;
+  await saveImageToCloud(file, "soil").catch((error) => console.warn("Cloud image save failed:", error.message));
   const imageMeta = await readImageMeta(file);
   const localSoil = {
     registeredSoilType: profile.soilType || "not provided",
@@ -1308,7 +1353,7 @@ guardDashboard();
 kgInitShared({ askLocation: true });
 summarizeProfile();
 renderSchemes();
-restoreDashboardAnalysis();
+restoreDashboardAnalysis().finally(() => scheduleDashboardAnalysisSave());
 initDashboardScrollSpy();
 initSpeechToText();
 window.addEventListener("kg-language-change", renderSchemes);
@@ -1339,9 +1384,14 @@ weatherBtn?.addEventListener("click", async () => {
 });
 
 cropImageInput?.addEventListener("change", () => {
-    const file = cropImageInput.files?.[0];
-  const label = document.querySelector(".upload-box span");
-  if (file && label) label.textContent = file.name;
+  const file = cropImageInput.files?.[0];
+  const label = cropImageInput.closest(".upload-box")?.querySelector("span");
+  if (!file || !label) return;
+  const kind = diseaseMode();
+  label.textContent = `${file.name} · saving`;
+  saveImageToCloud(file, kind)
+    .then(() => { label.textContent = `${file.name} · saved`; })
+    .catch((error) => { label.textContent = `${file.name} · cloud save failed`; console.warn(error.message); });
 });
 
 detectBtn?.addEventListener("click", async () => {
@@ -1354,6 +1404,7 @@ detectBtn?.addEventListener("click", async () => {
     detectBtn.disabled = true;
     const mode = diseaseMode();
     cropResult.innerHTML = `<span class="empty-state">Converting image to base64 and sending it to ${mode === "plant" ? "Plant.id" : "crop health"} AI...</span>`;
+    await saveImageToCloud(file, mode).catch((error) => console.warn("Cloud image save failed:", error.message));
     const base64 = await fileToBase64(file);
     const data = mode === "plant" ? await detectPlantDisease(base64) : await detectDisease(base64);
     renderCropResult(data, mode);
@@ -1418,7 +1469,11 @@ soilBtn?.addEventListener("click", analyzeSoilHealth);
 soilImageInput?.addEventListener("change", () => {
   const file = soilImageInput.files?.[0];
   const label = soilImageInput.closest(".upload-box")?.querySelector("span");
-  if (file && label) label.textContent = file.name;
+  if (!file || !label) return;
+  label.textContent = `${file.name} · saving`;
+  saveImageToCloud(file, "soil")
+    .then(() => { label.textContent = `${file.name} · saved`; })
+    .catch((error) => { label.textContent = `${file.name} · cloud save failed`; console.warn(error.message); });
 });
 schemeChatForm?.addEventListener("submit", (event) => {
   event.preventDefault();

@@ -2361,6 +2361,366 @@ body[data-page="landing"] .btn.simple-outline-button:hover {
   }
 }
 
+/* Basic farmer dashboard */
+body[data-page="dashboard"] .dashboard-main {
+  width: min(100% - 32px, 980px);
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+body[data-page="dashboard"] .dashboard-page svg,
+body[data-page="dashboard"] .eyebrow {
+  display: none !important;
+}
+
+body[data-page="dashboard"] .dashboard-hero {
+  margin: 0 0 16px;
+  padding: 20px 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+body[data-page="dashboard"] .dashboard-hero h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+body[data-page="dashboard"] .dashboard-analytics {
+  margin: 0 0 12px;
+}
+
+body[data-page="dashboard"] .analytics-card {
+  min-height: 86px;
+  padding: 14px;
+  border-radius: 4px !important;
+}
+
+body[data-page="dashboard"] .dashboard-panel,
+body[data-page="dashboard"] .crop-health-panel,
+body[data-page="dashboard"] .dashboard-card {
+  display: block;
+  margin-bottom: 12px;
+  padding: 20px;
+  border-radius: 4px !important;
+}
+
+body[data-page="dashboard"] .panel-copy,
+body[data-page="dashboard"] .crop-health-panel > div:first-child {
+  margin-bottom: 16px;
+}
+
+body[data-page="dashboard"] .panel-copy h2,
+body[data-page="dashboard"] .crop-health-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+}
+
+body[data-page="dashboard"] .panel-copy p,
+body[data-page="dashboard"] .crop-health-panel p {
+  max-width: 760px;
+  margin-top: 0;
+}
+
+body[data-page="dashboard"] .result-card,
+body[data-page="dashboard"] .diagnosis-row,
+body[data-page="dashboard"] .scheme-card,
+body[data-page="dashboard"] .crop-diagnosis-hero,
+body[data-page="dashboard"] .crop-treatment-card,
+body[data-page="dashboard"] .outlook-card,
+body[data-page="dashboard"] .forecast-day,
+body[data-page="dashboard"] .soil-score-card {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+body[data-page="dashboard"] .dashboard-feature-grid,
+body[data-page="dashboard"] .attention-fields {
+  gap: 10px;
+}
+
+body[data-page="dashboard"] .upload-box {
+  border-style: solid !important;
+}
+
+/* Admin pages */
+body[data-page="admin-login"],
+body[data-page="admin-dashboard"] {
+  min-height: 100vh;
+  background: #f6f8f6 !important;
+}
+
+.admin-login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin-login-card {
+  width: min(100%, 390px);
+  display: grid;
+  gap: 15px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.admin-login-card h1 {
+  margin: 8px 0 0;
+  font-size: 1.7rem;
+}
+
+.admin-login-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.admin-back-link {
+  color: var(--deep-green);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-header {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px max(16px, calc((100% - 1180px) / 2));
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-layout {
+  width: min(100% - 32px, 1180px);
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  margin: 20px auto 48px;
+  align-items: start;
+}
+
+.admin-users-panel,
+.admin-data-section,
+.admin-detail-head,
+.admin-empty {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.admin-users-panel {
+  position: sticky;
+  top: 16px;
+  padding: 18px;
+}
+
+.admin-users-panel h1 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.admin-users-panel > p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.admin-search-label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 7px;
+  max-height: calc(100vh - 210px);
+  overflow: auto;
+}
+
+.admin-user-button {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 11px;
+  color: var(--text) !important;
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  text-align: left;
+}
+
+.admin-user-button.active {
+  border-color: var(--deep-green) !important;
+  background: var(--light-green) !important;
+}
+
+.admin-user-button span,
+.admin-user-button small {
+  color: var(--muted);
+}
+
+.admin-detail {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-detail-head,
+.admin-data-section,
+.admin-empty {
+  padding: 20px;
+}
+
+.admin-detail-head p,
+.admin-detail-head span,
+.admin-empty-row {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.admin-detail-head h2 {
+  margin: 4px 0;
+}
+
+.admin-data-section h3 {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+}
+
+.admin-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-profile-grid div {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.admin-profile-grid dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.admin-profile-grid dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admin-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-upload-card {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.admin-upload-card img {
+  width: 100px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.admin-upload-card div {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-upload-card span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-upload-card a {
+  color: var(--deep-green);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.admin-saved-result {
+  max-width: 100%;
+  overflow: auto;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.admin-saved-result hr {
+  margin: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.admin-saved-result pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 820px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-users-panel {
+    position: static;
+  }
+
+  .admin-user-list {
+    max-height: 280px;
+  }
+
+  .admin-profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page="dashboard"] .dashboard-main {
+    width: min(100% - 20px, 980px);
+    padding-top: 14px;
+  }
+
+  body[data-page="dashboard"] .dashboard-panel,
+  body[data-page="dashboard"] .crop-health-panel,
+  body[data-page="dashboard"] .dashboard-card {
+    padding: 15px;
+  }
+
+  .admin-layout {
+    width: min(100% - 20px, 1180px);
+    margin-top: 10px;
+  }
+
+  .admin-profile-grid,
+  .admin-upload-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Plain white-and-green interface */
 :root {
   --deep-green: #2f6b45;
