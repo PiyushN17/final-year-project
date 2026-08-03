@@ -467,30 +467,54 @@ function printApplicationDraft() {
   printWindow.print();
 }
 
-function initSidebarScrollSpy() {
+function initDashboardScrollSpy() {
   const links = [...document.querySelectorAll("[data-section-link]")];
-  const sections = links.map((link) => document.getElementById(link.dataset.sectionLink)).filter(Boolean);
+  const linkedIds = new Set(links.map((link) => link.dataset.sectionLink));
+  const sections = [...document.querySelectorAll(".dashboard-main section[id]")].filter((section) => linkedIds.has(section.id));
   if (!links.length || !sections.length) return;
 
+  let activeId = "";
+  let updateQueued = false;
+
   const setActive = (id) => {
+    if (!linkedIds.has(id) || activeId === id) return;
+    activeId = id;
     links.forEach((link) => link.classList.toggle("active", link.dataset.sectionLink === id));
   };
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible?.target?.id) setActive(visible.target.id);
-    },
-    { root: null, rootMargin: "-18% 0px -62% 0px", threshold: [0.12, 0.25, 0.45, 0.65] }
-  );
+  const updateActiveSection = () => {
+    updateQueued = false;
+    const navBottom = document.querySelector(".dashboard-nav")?.getBoundingClientRect().bottom || 0;
+    const activationLine = navBottom + Math.min(140, window.innerHeight * 0.18);
+    let currentSection = sections[0];
 
-  sections.forEach((section) => observer.observe(section));
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+      currentSection = sections[sections.length - 1];
+    } else {
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= activationLine) currentSection = section;
+        else break;
+      }
+    }
+
+    setActive(currentSection.id);
+  };
+
+  const queueUpdate = () => {
+    if (updateQueued) return;
+    updateQueued = true;
+    window.requestAnimationFrame(updateActiveSection);
+  };
+
+  links.forEach((link) => link.addEventListener("click", () => setActive(link.dataset.sectionLink)));
+  window.addEventListener("scroll", queueUpdate, { passive: true });
+  window.addEventListener("resize", queueUpdate);
   window.addEventListener("hashchange", () => {
     const id = window.location.hash.replace("#", "");
     if (id) setActive(id);
+    queueUpdate();
   });
+  updateActiveSection();
 }
 
 function initSpeechToTextControl({ button, textarea, status }) {
@@ -973,7 +997,7 @@ guardDashboard();
 kgInitShared({ askLocation: true });
 summarizeProfile();
 renderSchemes();
-initSidebarScrollSpy();
+initDashboardScrollSpy();
 initSpeechToText();
 window.addEventListener("kg-language-change", renderSchemes);
 
