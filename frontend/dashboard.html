@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&family=Noto+Sans+Gujarati:wght@400;600;700;800;900&family=Noto+Sans+Kannada:wght@400;600;700;800;900&family=Noto+Sans+Tamil:wght@400;600;700;800;900&family=Noto+Sans+Telugu:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="refresh.css" />
+    <link rel="stylesheet" href="refresh.css?v=3" />
   </head>
   <body data-page="dashboard">
     <div class="dashboard-page">
@@ -154,14 +154,15 @@
         </section>
 
         <section class="dashboard-panel" id="ai-chat">
-          <div class="panel-copy speakable"><span class="eyebrow"><i data-lucide="bot"></i><span data-i18n="chatTitle">KrishiBaba</span></span><h2 data-i18n="chatTitle">KrishiBaba</h2><p data-i18n="chatCopy">Ask KrishiBaba about crop selection, pest control, fertilizer, irrigation, schemes, weather, or market readiness.</p></div>
+          <div class="panel-copy speakable"><span class="eyebrow"><i data-lucide="bot"></i><span>Ask about your farm</span></span><h2 data-i18n="chatTitle">KrishiBaba</h2><p data-i18n="chatCopy">Ask KrishiBaba about crop selection, pest control, fertilizer, irrigation, schemes, weather, or market readiness.</p></div>
           <form class="chat-box" id="chatForm">
             <div class="chat-input-wrap">
-              <textarea id="chatQuestion" data-i18n-placeholder="chatPlaceholder" placeholder="Ask your farming question..."></textarea>
+              <textarea id="chatQuestion" required minlength="3" data-i18n-placeholder="chatPlaceholder" placeholder="Ask your farming question..." aria-describedby="chatValidation"></textarea>
               <button class="mic-button" id="speechToTextBtn" type="button" aria-label="Speak your question"><i data-lucide="mic"></i></button>
             </div>
             <div class="chat-actions">
-              <button class="btn btn-primary" type="submit"><i data-lucide="send"></i><span data-i18n="chatButton">Ask KrishiGyaan</span></button>
+              <button class="btn btn-primary" id="chatSubmitBtn" type="submit" disabled><i data-lucide="send"></i><span data-i18n="chatButton">Ask KrishiGyaan</span></button>
+              <span class="speech-status" id="chatValidation" role="status">Enter a question to continue.</span>
               <span class="speech-status" id="speechStatus"></span>
             </div>
             <div class="result-card" id="chatAnswer"><span class="empty-state">KrishiBaba's advisory answer will appear here.</span></div>
@@ -180,6 +181,6 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="locales.js"></script>
     <script src="shared.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="dashboard.js?v=3"></script>
   </body>
 </html>

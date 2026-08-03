@@ -9,6 +9,8 @@ const cropResult = document.getElementById("cropResult");
 const detectBtn = document.getElementById("detectBtn");
 const chatForm = document.getElementById("chatForm");
 const chatQuestion = document.getElementById("chatQuestion");
+const chatSubmitBtn = document.getElementById("chatSubmitBtn");
+const chatValidation = document.getElementById("chatValidation");
 const chatAnswer = document.getElementById("chatAnswer");
 const modernBtn = document.getElementById("modernBtn");
 const modernResult = document.getElementById("modernResult");
@@ -376,11 +378,11 @@ function isOfflineLikeError(error) {
 }
 
 function saveDashboardSnapshot(key, element) {
-  if (element?.innerHTML) kgSaveOfflineSnapshot(`dashboard:${key}`, element.innerHTML);
+  if (element?.innerHTML) kgSaveOfflineSnapshot(`dashboard:v3:${key}`, element.innerHTML);
 }
 
 function showDashboardSnapshot(key, element, label, error) {
-  return kgRenderOfflineSnapshot(element, `dashboard:${key}`, label, error);
+  return kgRenderOfflineSnapshot(element, `dashboard:v3:${key}`, label, error);
 }
 
 function saveWeatherSnapshots() {
@@ -524,6 +526,7 @@ function initSpeechToTextControl({ button, textarea, status }) {
       }
     }
     textarea.value = `${finalTranscript}${interimTranscript}`.trim();
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
   recognition.onerror = (event) => {
@@ -594,26 +597,6 @@ function initSpeechToText() {
   window.addEventListener("beforeunload", () => {
     speechMicStream?.getTracks().forEach((track) => track.stop());
   });
-}
-
-async function localizeLongTermIntro() {
-  if (!longTermResult) return;
-  const label = kgCurrentLanguageLabel();
-  const sourceTitle = "30 दिन की फसल वृद्धि दिशा";
-  const sourceCopy = "Long-term guidance uses seasonal trend data where available and falls back to the 16-day trend for practical planning.";
-  longTermResult.classList.add("ai-loading");
-  try {
-    const text = await kgAiText(`Translate and adapt this dashboard microcopy only in ${label} (${kgActiveLanguage}). Return only valid JSON with keys "title" and "copy". Keep it short, farmer-friendly, and do not include markdown.\nTitle: ${sourceTitle}\nCopy: ${sourceCopy}`);
-    const jsonText = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
-    const data = JSON.parse(jsonText);
-    if (data.title && data.copy) {
-      longTermResult.innerHTML = `<h3>${data.title}</h3><p>${data.copy}</p>`;
-    }
-  } catch (error) {
-    console.warn("Long-term guidance localization failed:", error);
-  } finally {
-    longTermResult.classList.remove("ai-loading");
-  }
 }
 
 function fileToBase64(file) {
@@ -828,7 +811,7 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
     return `<div class="forecast-day" role="listitem"><div class="forecast-day-head"><strong>${dayLabel}</strong><span>${weatherCodeText(day.code)}</span></div><div class="rain-plot" title="${day.rain.toFixed(1)} mm rain"><span style="--rain-height:${rainHeight.toFixed(1)}%"></span><b>${day.rain.toFixed(1)}</b><small>mm</small></div><div class="temperature-track" aria-label="Temperature ${day.min.toFixed(0)} to ${day.max.toFixed(0)} degrees Celsius"><span style="--temp-start:${temperatureStart.toFixed(1)}%;--temp-width:${temperatureWidth.toFixed(1)}%"></span></div><div class="temperature-labels"><b>${day.min.toFixed(0)}°</b><b>${day.max.toFixed(0)}°</b></div><div class="forecast-wind">Wind ${day.wind.toFixed(0)} km/h</div></div>`;
   }).join("");
   weatherResult.innerHTML = `<div class="forecast-board"><div class="forecast-summary"><div><span class="eyebrow">Your location</span><h3>${place}</h3></div><div class="forecast-summary-metrics"><span><b>${totalRain.toFixed(1)} mm</b>10-day rain</span><span><b>${rainyDays}</b>rain-likely days</span><span><b>${averageWind.toFixed(0)} km/h</b>average wind</span></div></div><div class="forecast-legend"><span><i class="legend-rain"></i>Rainfall</span><span><i class="legend-temp"></i>Temperature range</span><small>${temperatureFloor}°C to ${temperatureCeiling}°C scale</small></div><div class="forecast-scroll"><div class="forecast-days" role="list" aria-label="10-day weather forecast">${forecastColumns}</div></div><div class="weather-advice" id="krishiBabaWeatherAdvice"><strong>KrishiBaba farmer guidance</strong><p>Preparing a short field recommendation...</p></div></div>`;
-  cropAdvice.innerHTML = advice.map((item) => `<div class="diagnosis-row"><strong>Farmer advisory</strong><p>${item}</p></div>`).join("");
+  cropAdvice.innerHTML = `<article class="crop-action-card"><div class="crop-action-heading"><span class="eyebrow">Based on the live forecast</span><h3>10-day field action plan</h3></div><ul>${advice.map((item) => `<li>${item}</li>`).join("")}</ul><div class="crop-ai-note" id="krishiBabaCropAdvice"><strong>KrishiBaba recommendation</strong><p>Preparing one profile-aware recommendation...</p></div></article>`;
 
   if (longTerm?.daily?.time?.length) {
     const rain = longTerm.daily.precipitation_sum || [];
@@ -850,12 +833,18 @@ async function renderWeather({ forecast, longTerm, latitude, longitude, place })
   const soilStatus = document.getElementById("soilStatus");
   if (soilStatus) soilStatus.textContent = days.some((day) => day.rain > 10) ? "Moisture risk is high. Keep drainage clear and avoid over-irrigation." : "Moisture appears manageable. Irrigate based on soil feel and crop stage.";
   try {
-    const aiAdvice = await kgAiText(`You are KrishiBaba, a farmer assistant. Give practical, low-cost, farmer-friendly guidance in the selected website language for the next 10 days based on this weather data and farmer profile. Maximum 100 words only. Include what to sow or avoid, irrigation, spraying, harvest timing, disease risk, and one long-term crop growth note. Do not use long introduction.\nLocation: ${place}\nFarmer profile: ${JSON.stringify(profile)}\nWeather days: ${JSON.stringify(days)}`);
+    const aiAdvice = await kgAiText(`You are KrishiBaba, a careful farmer assistant. Give one consistent, practical, low-cost recommendation in the selected website language for the next 10 days. Maximum 110 words.
+Use the actual registered crop and supplied forecast. Do not recommend harvesting unless the profile's sowing date, expected harvest, or crop stage supports it. Do not recommend a new crop merely because rain is expected. Never contradict yourself about irrigation, sunlight, sowing, or crop duration.
+Prioritize immediate actions under four short labels: Field work, Water, Disease watch, Next check. If rainfall is heavy, prioritize drainage, avoid spraying before rain, and advise checking the field before any sowing or transplanting decision.
+Location: ${place}
+Farmer profile: ${JSON.stringify(profile)}
+Weather days: ${JSON.stringify(days)}`);
     document.getElementById("krishiBabaWeatherAdvice").innerHTML = `<strong>KrishiBaba farmer guidance</strong><p>${renderAiText(aiAdvice)}</p>`;
-    cropAdvice.insertAdjacentHTML("beforeend", `<div class="diagnosis-row"><strong>KrishiBaba recommendation</strong><p>${renderAiText(aiAdvice)}</p></div>`);
+    document.getElementById("krishiBabaCropAdvice").innerHTML = `<strong>KrishiBaba recommendation</strong><p>${renderAiText(aiAdvice)}</p>`;
     kgSpeak(aiAdvice, kgActiveLanguage);
   } catch (error) {
     document.getElementById("krishiBabaWeatherAdvice").innerHTML = `<strong>KrishiBaba farmer guidance</strong><p>${error.message}</p><p>Use the local advisory shown above until KrishiBaba is available.</p>`;
+    document.getElementById("krishiBabaCropAdvice").innerHTML = `<strong>Local recommendation</strong><p>Use the forecast-based action list above and check the field before irrigation, spraying, sowing, or harvest work.</p>`;
     kgSpeak(advice.join(" "), kgActiveLanguage);
   }
   saveWeatherSnapshots();
@@ -986,8 +975,6 @@ summarizeProfile();
 renderSchemes();
 initSidebarScrollSpy();
 initSpeechToText();
-localizeLongTermIntro();
-window.addEventListener("kg-language-change", localizeLongTermIntro);
 window.addEventListener("kg-language-change", renderSchemes);
 
 document.getElementById("logoutBtn")?.addEventListener("click", () => {
@@ -1047,10 +1034,27 @@ detectBtn?.addEventListener("click", async () => {
   }
 });
 
+function updateChatSubmitState() {
+  if (!chatQuestion || !chatSubmitBtn) return;
+  const hasQuestion = chatQuestion.value.trim().length >= 3;
+  chatSubmitBtn.disabled = !hasQuestion;
+  if (chatValidation) chatValidation.textContent = hasQuestion ? "Ready to ask." : "Enter a question to continue.";
+}
+
+chatQuestion?.addEventListener("input", updateChatSubmitState);
+updateChatSubmitState();
+
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
+  const question = chatQuestion.value.trim();
+  if (question.length < 3) {
+    updateChatSubmitState();
+    chatQuestion.focus();
+    return;
+  }
+  chatSubmitBtn.disabled = true;
   chatAnswer.innerHTML = `<span class="empty-state">KrishiBaba is preparing farmer guidance...</span>`;
-  answerQuestion(chatQuestion.value || "").then((answer) => {
+  answerQuestion(question).then((answer) => {
     chatAnswer.innerHTML = `<div class="diagnosis-row"><strong>KrishiGyaan advisory</strong><p>${renderAiText(answer)}</p></div>`;
     saveDashboardSnapshot("chat-answer", chatAnswer);
     kgSpeak(answer, kgActiveLanguage);
@@ -1058,6 +1062,8 @@ chatForm?.addEventListener("submit", (event) => {
     if (!isOfflineLikeError(error) || !showDashboardSnapshot("chat-answer", chatAnswer, "chatbot reply", error)) {
       chatAnswer.innerHTML = `<div class="diagnosis-row"><strong>KrishiBaba unavailable</strong><p>${error.message}</p></div>`;
     }
+  }).finally(() => {
+    updateChatSubmitState();
   });
 });
 
